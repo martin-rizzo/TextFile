@@ -1,8 +1,6 @@
-/bin/*
-/src/*.o
-!/bin/README.md
+/app/lines
+/app/lines-debug
 
 xcuserdata/
 .DS_Store
-/qeval.sublime*
 
