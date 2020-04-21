@@ -50,7 +50,7 @@ static void printLines(const char* filename, int firstLine, int lastLine, const 
         if (line!=NULL) {
             if ( (firstLine<=0 || firstLine<=lineNumber) && (lastLine<=0 || lineNumber<=lastLine) ) {
                 if (textToFind==NULL || strstr(line,textToFind)!=NULL) {
-                    printf("%d: %s", lineNumber++, line);
+                    printf("%d: %s\n", lineNumber++, line);
                 }
             }
         }

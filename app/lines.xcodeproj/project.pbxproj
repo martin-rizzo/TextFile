@@ -51,13 +51,6 @@
 			path = app;
 			sourceTree = "<group>";
 		};
-		5B04CC9D244F5839000291BE /* test */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = test;
-			sourceTree = "<group>";
-		};
 		5BE1C139244F569B00CD1BBC = {
 			isa = PBXGroup;
 			children = (
@@ -78,7 +71,6 @@
 			isa = PBXGroup;
 			children = (
 				5B04CC98244F57F5000291BE /* app */,
-				5B04CC9D244F5839000291BE /* test */,
 				5B04CC97244F57CE000291BE /* LICENSE.md */,
 				5B04CC95244F57CE000291BE /* README.md */,
 				5B04CC96244F57CE000291BE /* txtfile.h */,
