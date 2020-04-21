@@ -1,0 +1,8 @@
+/bin/*
+/src/*.o
+!/bin/README.md
+
+xcuserdata/
+.DS_Store
+/qeval.sublime*
+
