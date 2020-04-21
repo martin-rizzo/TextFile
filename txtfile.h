@@ -43,11 +43,11 @@
 typedef struct TXTFILE {
     FILE* file;
     char* buffer;
-    int   bufsize;
+    int   bufferSize;
+    char* bufferEnd;
+    char* nextLine;
     char  initialBuffer[TXTFILE_INI_BUFSIZE];
     char* extendedBuffer;
-    int   test;
-    
 } TXTFILE;
 
 
@@ -94,18 +94,42 @@ TXTFILE* txtfopen(const char* filename, const char* mode) {
         txtfile = malloc(sizeof(TXTFILE));
         txtfile->file           = file;
         txtfile->buffer         = txtfile->initialBuffer;
-        txtfile->bufsize        = TXTFILE_INI_BUFSIZE;
+        txtfile->bufferSize     = TXTFILE_INI_BUFSIZE;
+        txtfile->bufferEnd      = NULL;
+        txtfile->nextLine       = NULL;
         txtfile->extendedBuffer = NULL;
-        txtfile->test = 1;
     }
     return txtfile;
 }
 
+void txtf_expandbuf(TXTFILE* txtfile) { }
+
 
 char* txtfgetline(TXTFILE* txtfile) {
-    static char* test = "test";
-    if (txtfile->test) { txtfile->test=0; return test; }
-    return NULL;
+    char *ptr, *line, *bufferEnd; int bytesRead;
+    
+    assert( txtfile!=NULL && txtfile->file!=NULL );
+    
+    /* read first chunk */
+    if (txtfile->nextLine==NULL) {
+        bytesRead = (int)fread(txtfile->buffer, sizeof(char), txtfile->bufferSize, txtfile->file);
+        txtfile->bufferEnd = &txtfile->buffer[bytesRead];
+        /* TODO: extract BOM if it exists */
+        txtfile->nextLine = txtfile->buffer;
+    }
+    
+    /* find end of line */
+    bufferEnd  = txtfile->bufferEnd;
+    ptr = line = txtfile->nextLine; while (ptr==line) {
+        while (*ptr!='\n' && *ptr!='\r' && ptr<bufferEnd) { ++ptr; }
+        if (ptr==bufferEnd) { txtf_expandbuf(txtfile); ptr=line=txtfile->nextLine; return NULL; }
+        else {
+            if ( (ptr[0]=='\n' && ptr[1]=='\r') || (ptr[0]=='\r' && ptr[1]=='\n') ) { *ptr='\0'; ptr+=2; }
+            else { *ptr++='\0'; }
+        }
+    }
+    txtfile->nextLine = ptr;
+    return line;
 }
 
 char* txtfgets(char* buffer, int bufsize, TXTFILE* txtfile) {
