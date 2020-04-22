@@ -48,7 +48,7 @@ typedef struct TXTFILE {
     char* nextLine;
     char  initialBuffer[TXTFILE_INI_BUFSIZE];
     char* extendedBuffer;
-    int   moreAvailable;
+    int   moreData;
 } TXTFILE;
 
 
@@ -99,14 +99,14 @@ TXTFILE* txtfopen(const char* filename, const char* mode) {
         txtfile->nextLine       = txtfile->buffer;
         txtfile->bufferEnd      = NULL;
         txtfile->extendedBuffer = NULL;
-        txtfile->moreAvailable  = 1;
+        txtfile->moreData       = 0;
     }
     return txtfile;
 }
 
 
 
-void txtf_readmore(TXTFILE* txtfile) {
+char* txtf__readmoredata(TXTFILE* txtfile) {
     int bytesToKeep, bytesToLoad, bytesRead;
     
     bytesToKeep = (int)(txtfile->bufferEnd - txtfile->nextLine);
@@ -117,9 +117,10 @@ void txtf_readmore(TXTFILE* txtfile) {
     }
     if (bytesToKeep) { memmove(txtfile->buffer, txtfile->nextLine, bytesToKeep); }
     bytesRead = (int)fread(&txtfile->buffer[bytesToKeep], sizeof(char), bytesToLoad, txtfile->file);
-    txtfile->moreAvailable = (bytesRead==bytesToLoad);
-    txtfile->nextLine      = txtfile->buffer;
-    txtfile->bufferEnd     = &txtfile->buffer[bytesToKeep+bytesRead];
+    txtfile->moreData  = (bytesRead==bytesToLoad);
+    txtfile->nextLine  = txtfile->buffer;
+    txtfile->bufferEnd = &txtfile->buffer[bytesToKeep+bytesRead];
+    return txtfile->nextLine;
 }
 
 
@@ -130,29 +131,28 @@ char* txtfgetline(TXTFILE* txtfile) {
     
     if (txtfile->nextLine==NULL) { return NULL; }
     
-    /* read first chunk */
+    /* read first chunk of data */
     if (txtfile->bufferEnd==NULL) {
         txtfile->bufferEnd = txtfile->nextLine;
-        txtf_readmore(txtfile);
+        txtf__readmoredata(txtfile);
         /* TODO: extract BOM if it exists */
     }
     
-    /* find end of line */
     bufferEnd  = txtfile->bufferEnd;
-    ptr = line = txtfile->nextLine; while (ptr==line) {
+    ptr = line = txtfile->nextLine;
+    while (ptr==line) {
+        /* find end-of-line */
         while (*ptr!='\n' && *ptr!='\r' && ptr<bufferEnd) { ++ptr; }
+        /* if end-of-line is found -> mark it with a string terminator '\0' */
         if (ptr<bufferEnd) {
             if ( (ptr[0]=='\n' && ptr[1]=='\r') || (ptr[0]=='\r' && ptr[1]=='\n') ) { *ptr='\0'; ptr+=2; }
             else { *ptr++='\0'; }
         }
-        else if (!txtfile->moreAvailable) {
-            *ptr='\0';
-            ptr=NULL;
-        }
-        else {
-            txtf_readmore(txtfile);
-            ptr=line=txtfile->nextLine;
-        }
+        /* end-of-line NOT found in buffer */
+        /* if more data is available -> load more data into buffer and SEARCH AGAIN (ptr=line) */
+        /* otherwise the end of file was reached -> mark it with a string terminator '\0'      */
+        else if (txtfile->moreData) { ptr=line=txtf__readmoredata(txtfile);  }
+        else                        { *ptr='\0'; ptr=NULL; /* end-of-file */ }
     }
     txtfile->nextLine = ptr;
     return line;
