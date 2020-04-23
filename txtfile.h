@@ -144,10 +144,8 @@ char* txtfgetline(TXTFILE* txtfile) {
         /* find end-of-line */
         while (*ptr!='\n' && *ptr!='\r' && ptr<bufferEnd) { ++ptr; }
         /* if end-of-line is found -> mark it with a string terminator '\0' */
-        if (ptr<bufferEnd) {
-            if ( (ptr[0]=='\n' && ptr[1]=='\r') || (ptr[0]=='\r' && ptr[1]=='\n') ) { *ptr='\0'; ptr+=2; }
-            else { *ptr++='\0'; }
-        }
+        if      (*ptr=='\r') { *ptr++='\0'; if (*ptr=='\n') { ++ptr; } }
+        else if (*ptr=='\n') { *ptr++='\0'; if (*ptr=='\r') { ++ptr; } }
         /* end-of-line NOT found in buffer */
         /* if more data is available -> load more data into buffer and SEARCH AGAIN (ptr=line) */
         /* otherwise the end of file was reached -> mark it with a string terminator '\0'      */
