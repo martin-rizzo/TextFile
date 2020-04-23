@@ -47,7 +47,7 @@ typedef struct TXTFILE {
     char* bufferEnd;
     char* nextLine;
     char  initialBuffer[TXTFILE_INI_BUFSIZE];
-    char* extendedBuffer;
+    char* expandedBuffer;
     int   moreData;
 } TXTFILE;
 
@@ -98,7 +98,7 @@ TXTFILE* txtfopen(const char* filename, const char* mode) {
         txtfile->bufferSize     = TXTFILE_INI_BUFSIZE;
         txtfile->nextLine       = txtfile->buffer;
         txtfile->bufferEnd      = NULL;
-        txtfile->extendedBuffer = NULL;
+        txtfile->expandedBuffer = NULL;
         txtfile->moreData       = 0;
     }
     return txtfile;
@@ -108,24 +108,30 @@ TXTFILE* txtfopen(const char* filename, const char* mode) {
 
 char* txtf__readmoredata(TXTFILE* txtfile) {
     int bytesToKeep, bytesToLoad, bytesRead;
+    char* bufferToFree=NULL;
     
     bytesToKeep = (int)(txtfile->bufferEnd - txtfile->nextLine);
     bytesToLoad = (txtfile->bufferSize-2) - bytesToKeep;
+    /* if not enough space to load a line of text -> expand buffer!! */
     if (bytesToLoad==0) {
-        /* expand buffer!! */
-        assert( 0 );
+        bufferToFree = txtfile->expandedBuffer;
+        txtfile->bufferSize    *= 2;
+        txtfile->expandedBuffer = malloc(txtfile->bufferSize);
+        txtfile->buffer         = txtfile->expandedBuffer;
+        bytesToLoad = (txtfile->bufferSize-2) - bytesToKeep;
     }
     if (bytesToKeep) { memmove(txtfile->buffer, txtfile->nextLine, bytesToKeep); }
     bytesRead = (int)fread(&txtfile->buffer[bytesToKeep], sizeof(char), bytesToLoad, txtfile->file);
     txtfile->moreData  = (bytesRead==bytesToLoad);
     txtfile->nextLine  = txtfile->buffer;
     txtfile->bufferEnd = &txtfile->buffer[bytesToKeep+bytesRead];
+    if (bufferToFree) { free(bufferToFree); }
     return txtfile->nextLine;
 }
 
 
 char* txtfgetline(TXTFILE* txtfile) {
-    char *ptr, *line, *bufferEnd;
+    char *ptr, *line;
     
     assert( txtfile!=NULL && txtfile->file!=NULL );
     
@@ -138,11 +144,10 @@ char* txtfgetline(TXTFILE* txtfile) {
         /* TODO: extract BOM if it exists */
     }
     
-    bufferEnd  = txtfile->bufferEnd;
     ptr = line = txtfile->nextLine;
     while (ptr==line) {
         /* find end-of-line */
-        while (*ptr!='\n' && *ptr!='\r' && ptr<bufferEnd) { ++ptr; }
+        while (*ptr!='\n' && *ptr!='\r' && ptr<(txtfile->bufferEnd)) { ++ptr; }
         /* if end-of-line is found -> mark it with a string terminator '\0' */
         if      (*ptr=='\r') { *ptr++='\0'; if (*ptr=='\n') { ++ptr; } }
         else if (*ptr=='\n') { *ptr++='\0'; if (*ptr=='\r') { ++ptr; } }
@@ -171,7 +176,7 @@ char* txtfgets(char* buffer, int bufsize, TXTFILE* txtfile) {
 
 int txtfclose(TXTFILE* txtfile) {
     if (txtfile!=NULL) {
-        free(txtfile->extendedBuffer);
+        free(txtfile->expandedBuffer);
         free(txtfile);
     }
     return 0;
