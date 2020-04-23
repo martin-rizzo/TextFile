@@ -38,6 +38,30 @@
 #include "../txtfile.h"
 
 
+static void printEncoding(const char* filename, TXTFILE* txtfile) {
+    const char *encoding, *newline;
+    
+    assert( txtfile!=NULL );
+    
+    switch (txtfile->encoding) {
+        case TXTF_ENCODING_UTF8:          encoding = "UTF-8"; break;
+        case TXTF_ENCODING_UTF8_BOM:      encoding = "UTF-8 with BOM"; break;
+        case TXTF_ENCODING_UTF16_LE:      encoding = "UTF-16 LE"; break;
+        case TXTF_ENCODING_UTF16_BE:      encoding = "UTF-16 BE"; break;
+        case TXTF_ENCODING_UTF16_LE_BOM:  encoding = "UTF-16 LE with BOM"; break;
+        case TXTF_ENCODING_UTF16_BE_BOM:  encoding = "UTF-16 BE with BOM"; break;
+        case TXTF_ENCODING_BINARY:        encoding = "Binary"; break;
+    }
+    switch (txtfile->newline) {
+        case TXTF_NEWLINE_UNIX:          newline = "Unix"; break;
+        case TXTF_NEWLINE_WINDOWS:       newline = "Windows"; break;
+        case TXTF_NEWLINE_CLASSICMAC:    newline = "Classic Mac"; break;
+        case TXTF_NEWLINE_ACORNBBC:      newline = "Acorn BBC"; break;
+        case TXTF_NEWLINE_UNKNOWN:       newline = "Unknown"; break;
+    }
+    printf("%s : %s : %s\n", filename, newline, encoding);
+}
+
 static void printLines(const char* filename, int firstLine, int lastLine, const char* textToFind) {
     TXTFILE* txtfile; int lineNumber; const char* line;
     assert( filename!=NULL );
@@ -45,6 +69,7 @@ static void printLines(const char* filename, int firstLine, int lastLine, const 
     txtfile = txtfopen(filename, "r");
     if (txtfile==NULL) { return; }
     
+    printEncoding(filename,txtfile);
     lineNumber=1; line=""; while (line!=NULL) {
         line = txtfgetline(txtfile);
         if (line!=NULL) {
