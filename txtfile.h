@@ -106,6 +106,7 @@ extern int txtfclose(TXTFILE* txtfile);
 
 #ifdef TXTFILE_IMPLEMENTATION
 #include <stdlib.h>
+#include <string.h>
 
 char* txtf__readmoredata(TXTFILE* txtfile) {
     int bytesToKeep, bytesToLoad, bytesRead;
@@ -131,7 +132,23 @@ char* txtf__readmoredata(TXTFILE* txtfile) {
 }
 
 void txtf__detectencoding(TXTFILE* txtfile) {
+    static const unsigned char UTF8_BOM[]     = { 239, 187, 191 };
+    static const unsigned char UTF16_BE_BOM[] = { 254, 255 };
+    static const unsigned char UTF16_LE_BOM[] = { 255, 254 };
     
+    char* ptr; int len;
+    assert( txtfile!=NULL );
+    
+    txtfile->encoding = TXTF_ENCODING_UTF8;
+    txtfile->newline  = TXTF_NEWLINE_UNIX;
+    
+    /* detecting BOM (byte order mask) */
+    ptr = txtfile->nextLine;
+    len = (int)(txtfile->bufferEnd-txtfile->nextLine);
+    if      (len>=3 && memcmp(ptr,UTF8_BOM    ,3)==0) { txtfile->encoding=TXTF_ENCODING_UTF8_BOM    ; ptr+=3; }
+    else if (len>=2 && memcmp(ptr,UTF16_BE_BOM,2)==0) { txtfile->encoding=TXTF_ENCODING_UTF16_BE_BOM; ptr+=2; }
+    else if (len>=2 && memcmp(ptr,UTF16_LE_BOM,2)==0) { txtfile->encoding=TXTF_ENCODING_UTF16_LE_BOM; ptr+=2; }
+    txtfile->nextLine = ptr;
 }
 
 
