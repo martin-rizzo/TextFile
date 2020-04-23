@@ -40,6 +40,25 @@
 #define TXTFILE_MAX_BUFSIZE (32*1024)
 
 
+typedef enum TXTF_ENCODING {
+    TXTF_ENCODING_UTF8,         /* < UTF8, ASCI, Windows-1252, ...                 */
+    TXTF_ENCODING_UTF8_BOM,     /* < UTF8+BOM [confirmed]                          */
+    TXTF_ENCODING_UTF16_LE,     /* < UTF16 little-endian                           */
+    TXTF_ENCODING_UTF16_BE,     /* < UTF16 big-endian                              */
+    TXTF_ENCODING_UTF16_LE_BOM, /* < UTF16+BOM little-endian [confirmed]           */
+    TXTF_ENCODING_UTF16_BE_BOM, /* < UTF16+BOM big-endian [confirmed]              */
+    TXTF_ENCODING_BINARY        /* < invalid text file (it's likely a binary file) */
+} TXTF_ENCODING;
+
+typedef enum TXTF_NEWLINE {
+    TXTF_NEWLINE_WINDOWS,    /* < '\r\n'  =  MS Windows, DOS, CP/M, OS/2, Atari TOS, ...                   */
+    TXTF_NEWLINE_UNIX,       /* < '\n'    =  Linux, macOS, BeOS, Amiga, RISC OS, ...                       */
+    TXTF_NEWLINE_CLASSICMAC, /* < '\r'    =  Classic Mac OS, C64, C128, ZX Spectrum, TRS-80, Apple II, ... */
+    TXTF_NEWLINE_ACORNBBC,   /* < '\n\r'  =  Acorn BBC                                                     */
+    TXTF_NEWLINE_UNKNOWN
+} TXTF_NEWLINE;
+
+
 typedef struct TXTFILE {
     FILE* file;
     char* buffer;
@@ -49,6 +68,8 @@ typedef struct TXTFILE {
     char  initialBuffer[TXTFILE_INI_BUFSIZE];
     char* expandedBuffer;
     int   moreData;
+    TXTF_ENCODING encoding;
+    TXTF_NEWLINE  newline;
 } TXTFILE;
 
 
@@ -86,26 +107,6 @@ extern int txtfclose(TXTFILE* txtfile);
 #ifdef TXTFILE_IMPLEMENTATION
 #include <stdlib.h>
 
-
-TXTFILE* txtfopen(const char* filename, const char* mode) {
-    TXTFILE* txtfile=NULL; FILE* file;
-
-    file = fopen(filename,mode);
-    if (file) {
-        txtfile = malloc(sizeof(TXTFILE));
-        txtfile->file           = file;
-        txtfile->buffer         = txtfile->initialBuffer;
-        txtfile->bufferSize     = TXTFILE_INI_BUFSIZE;
-        txtfile->nextLine       = txtfile->buffer;
-        txtfile->bufferEnd      = NULL;
-        txtfile->expandedBuffer = NULL;
-        txtfile->moreData       = 0;
-    }
-    return txtfile;
-}
-
-
-
 char* txtf__readmoredata(TXTFILE* txtfile) {
     int bytesToKeep, bytesToLoad, bytesRead;
     char* bufferToFree=NULL;
@@ -129,20 +130,41 @@ char* txtf__readmoredata(TXTFILE* txtfile) {
     return txtfile->nextLine;
 }
 
+void txtf__detectencoding(TXTFILE* txtfile) {
+    
+}
+
+
+/*=================================================================================================================*/
+#pragma mark - > IMPLEMENTATION
+
+
+TXTFILE* txtfopen(const char* filename, const char* mode) {
+    TXTFILE* txtfile=NULL; FILE* file;
+
+    file = fopen(filename,mode);
+    if (file) {
+        txtfile = malloc(sizeof(TXTFILE));
+        txtfile->file           = file;
+        txtfile->buffer         = txtfile->initialBuffer;
+        txtfile->bufferSize     = TXTFILE_INI_BUFSIZE;
+        txtfile->nextLine       = txtfile->buffer;
+        txtfile->bufferEnd      = txtfile->nextLine;
+        txtfile->expandedBuffer = NULL;
+        txtfile->moreData       = 0;
+        
+        /* read first chunk of data */
+        txtf__readmoredata(txtfile);
+        txtf__detectencoding(txtfile);
+    }
+    return txtfile;
+}
 
 char* txtfgetline(TXTFILE* txtfile) {
     char *ptr, *line;
-    
     assert( txtfile!=NULL && txtfile->file!=NULL );
     
     if (txtfile->nextLine==NULL) { return NULL; }
-    
-    /* read first chunk of data */
-    if (txtfile->bufferEnd==NULL) {
-        txtfile->bufferEnd = txtfile->nextLine;
-        txtf__readmoredata(txtfile);
-        /* TODO: extract BOM if it exists */
-    }
     
     ptr = line = txtfile->nextLine;
     while (ptr==line) {
