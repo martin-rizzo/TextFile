@@ -62,6 +62,14 @@ static void printEncoding(const char* filename, TXTFILE* txtfile) {
     printf("%s : %s : %s\n", filename, newline, encoding);
 }
 
+#define shouldPrint(lineNumber, line, firstLine, lastLine, textToFind) (\
+    (line!=NULL)                                &&                      \
+    (firstLine<=0     || firstLine<=lineNumber) &&                      \
+    (lastLine <=0     || lineNumber<=lastLine)  &&                      \
+    (textToFind==NULL || strstr(line,textToFind)!=NULL)                 \
+)
+
+
 static void printLines(const char* filename, int firstLine, int lastLine, const char* textToFind) {
     TXTFILE* txtfile; int lineNumber; const char* line;
     assert( filename!=NULL );
@@ -70,15 +78,19 @@ static void printLines(const char* filename, int firstLine, int lastLine, const 
     if (txtfile==NULL) { return; }
     
     printEncoding(filename,txtfile);
-    line=""; for (lineNumber=1; line!=NULL; ++lineNumber) {
-        line = txtfgetline(txtfile);
-        if (line!=NULL) {
-            if ( (firstLine<=0 || firstLine<=lineNumber) && (lastLine<=0 || lineNumber<=lastLine) ) {
-                if (textToFind==NULL || strstr(line,textToFind)!=NULL) {
-                    printf("%d: %s\n", lineNumber, line);
-                }
+    if (txtfissupported(txtfile)) {
+        lineNumber=1; do
+        {
+            line = txtfgetline(txtfile);
+            if ( shouldPrint(lineNumber,line,firstLine,lastLine,textToFind) ) {
+                printf("%d: %s\n", lineNumber, line);
             }
+            ++lineNumber;
         }
+        while (line!=NULL);
+    }
+    else {
+        printf("  << not supported >>\n");
     }
     txtfclose(txtfile);
 }
