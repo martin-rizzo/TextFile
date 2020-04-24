@@ -29,15 +29,14 @@
  *  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * -------------------------------------------------------------------------
  */
-#include <assert.h>
-#include <stdio.h>
-#include <string.h>
 
 /* includes the 'txtfile.h' library and its implementation */
 #define TXTFILE_IMPLEMENTATION
 #include "../txtfile.h"
 
-
+#include <assert.h>
+#include <stdio.h>
+#include <string.h>
 
 /*=================================================================================================================*/
 #pragma mark - > HELPER FUNCTIONS
@@ -57,9 +56,37 @@
     (textToFind==NULL || strstr(line,textToFind)!=NULL)                 \
 )
 
+/**
+ * Reads a range supplied by the user as parameter in the command-line
+ * @param[out] out_firstLine  Pointer to the integer where the first value of the range will be returned
+ * @param[out] out_lastLine   Pointer to the integer where the last value of the range will be returned
+ * @param argc                The number of command-line parameters contained in the 'argv' array
+ * @param argv                An array containing each command-line parameter (starting at argv[1])
+ * @param inout_index         Index of the parameter containing the "--range" text
+ */
+static void readRange(int* out_firstLine, int* out_lastLine, int argc, char *argv[], int* inout_index) {
+    int index; char *string1, *string2;
+    assert( argv!=NULL && inout_index!=NULL );
+
+    index = (*inout_index)+1;
+    if (index<argc) {
+        string1 = argv[index];
+        string2 = strchr(string1,':'); if (string2) { ++string2; }
+        if (out_firstLine && string1 && *string1!=':' ) { *out_firstLine=atoi(string1); }
+        if (out_lastLine  && string2 && *string2!='\0') { *out_lastLine =atoi(string2); }
+        (*inout_index) = index;
+    }
+}
 
 
-static void printEncoding(const char* filename, TXTFILE* txtfile) {
+/*=================================================================================================================*/
+#pragma mark - > PRINTING
+
+/**
+ * Prints the type of encoding used in the provided text file
+ * @param txtfile  The text file to examine (it should be already open with 'txtfopen')
+ */
+static void printEncoding(TXTFILE* txtfile) {
     const char *encoding, *newline;
     
     assert( txtfile!=NULL );
@@ -80,19 +107,25 @@ static void printEncoding(const char* filename, TXTFILE* txtfile) {
         case TXTF_NEWLINE_ACORNBBC:      newline = "Acorn BBC"; break;
         case TXTF_NEWLINE_UNKNOWN:       newline = "Unknown"; break;
     }
-    printf("%s : %s : %s\n", filename, newline, encoding);
+    printf("%s : %s\n", newline, encoding);
 }
 
-
-
-static void printLines(const char* filename, int firstLine, int lastLine, const char* textToFind) {
+/**
+ * Reads a file and prints all lines of text that matches the provided condition
+ * @param filename    The path to the file to print
+ * @param firstLine   The number of the first line to prinet (0 = print from the begin of the file)
+ * @param lastLine    The number of the last line to print (0 = print until the end of the file)
+ * @param textToFind  The text that the line must contain to be printed (NULL = print all lines)
+ */
+static void printLinesOfText(const char* filename, int firstLine, int lastLine, const char* textToFind) {
     TXTFILE* txtfile; int lineNumber; const char* line;
     assert( filename!=NULL );
     
     txtfile = txtfopen(filename, "r");
     if (txtfile==NULL) { return; }
     
-    printEncoding(filename,txtfile);
+    printf("%s : ",filename);
+    printEncoding(txtfile);
     if (txtfissupported(txtfile)) {
         lineNumber=1; do
         {
@@ -110,29 +143,14 @@ static void printLines(const char* filename, int firstLine, int lastLine, const 
     txtfclose(txtfile);
 }
 
-static void getLineRange(int* out_firstLine, int* out_lastLine, int argc, char *argv[], int* inout_index) {
-    int index; char *string1, *string2;
-    assert( argv!=NULL && inout_index!=NULL );
-
-    index = (*inout_index)+1;
-    if (index<argc) {
-        string1 = argv[index];
-        string2 = strchr(string1,':'); if (string2) { ++string2; }
-        if (out_firstLine && string1 && *string1!=':' ) { *out_firstLine=atoi(string1); }
-        if (out_lastLine  && string2 && *string2!='\0') { *out_lastLine =atoi(string2); }
-        (*inout_index) = index;
-    }
-}
 
 /*=================================================================================================================*/
 #pragma mark - > MAIN
 
 #define VERSION   "0.1"
 #define COPYRIGHT "Copyright (c) 2020 Martin Rizzo"
-
 #define isOption(param,name1,name2) \
     (strcmp(param,name1)==0 || strcmp(param,name2)==0)
-
 
 /**
  * Application starting point
@@ -161,7 +179,7 @@ int main(int argc, char *argv[]) {
     for (i=1; i<argc; ++i) { param=argv[i];
         if ( param[0]!='-' ) { files[fileCount++]=param; }
         else {
-            if      ( isOption(param,"-r","--range"  ) ) { getLineRange(&firstLine,&lastLine,argc,argv,&i); }
+            if      ( isOption(param,"-r","--range"  ) ) { readRange(&firstLine,&lastLine,argc,argv,&i); }
             else if ( isOption(param,"-s","--search" ) ) { ++i; textToFind=(i<argc ? argv[i] :  NULL);      }
             else if ( isOption(param,"-h","--help")    ) { printHelpAndExit   =1; }
             else if ( isOption(param,"-v","--version") ) { printVersionAndExit=1; }
@@ -174,7 +192,7 @@ int main(int argc, char *argv[]) {
     
     /* print all requested files */
     for (i=0; i<fileCount; ++i) {
-        printLines(files[i],firstLine,lastLine,textToFind);
+        printLinesOfText(files[i],firstLine,lastLine,textToFind);
         printf("\n");
     }
     free(files);
