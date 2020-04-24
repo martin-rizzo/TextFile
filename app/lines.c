@@ -70,12 +70,12 @@ static void printLines(const char* filename, int firstLine, int lastLine, const 
     if (txtfile==NULL) { return; }
     
     printEncoding(filename,txtfile);
-    lineNumber=1; line=""; while (line!=NULL) {
+    line=""; for (lineNumber=1; line!=NULL; ++lineNumber) {
         line = txtfgetline(txtfile);
         if (line!=NULL) {
             if ( (firstLine<=0 || firstLine<=lineNumber) && (lastLine<=0 || lineNumber<=lastLine) ) {
                 if (textToFind==NULL || strstr(line,textToFind)!=NULL) {
-                    printf("%d: %s\n", lineNumber++, line);
+                    printf("%d: %s\n", lineNumber, line);
                 }
             }
         }
@@ -83,10 +83,66 @@ static void printLines(const char* filename, int firstLine, int lastLine, const 
     txtfclose(txtfile);
 }
 
+static void getLineRange(int* out_firstLine, int* out_lastLine, int argc, char *argv[], int* inout_index) {
+    int index; char *string1, *string2;
+    assert( argv!=NULL && inout_index!=NULL );
+
+    index = (*inout_index)+1;
+    if (index<argc) {
+        string1 = argv[index];
+        string2 = strchr(string1,':'); if (string2) { ++string2; }
+        if (out_firstLine && string1 && *string1!=':' ) { *out_firstLine=atoi(string1); }
+        if (out_lastLine  && string2 && *string2!='\0') { *out_lastLine =atoi(string2); }
+        (*inout_index) = index;
+    }
+}
+
+/*=================================================================================================================*/
+#pragma mark - > MAIN
+
+#define VERSION   "0.1"
+#define COPYRIGHT "Copyright (c) 2020 Martin Rizzo"
+
+#define isOption(param,name1,name2) \
+    (strcmp(param,name1)==0 || strcmp(param,name2)==0)
+
+
+/**
+ * Application starting point
+ * @param argc  The number of elements in the 'argv' array
+ * @param argv  An array containing each command-line parameter (starting at argv[1])
+ */
 int main(int argc, char *argv[]) {
+    const char *textToFind=NULL, *param; int i;
+    int firstLine=0, lastLine=0;
+    int printHelpAndExit=0, printVersionAndExit=0;
+    const char *help[] = {
+        "USAGE: lines [options] file1.txt file2.txt ...","",
+        "  OPTIONS:",
+        "    -h, --help            display this help and exit",
+        "    -v, --version         output version information and exit",
+        NULL
+    };
+
+
+    /* process all flags & options */
+    for (i=1; i<argc; ++i) { param=argv[i];
+        if ( param[0]=='-' ) {
+            if      ( isOption(param,"-h","--help")    ) { printHelpAndExit   =1; }
+            else if ( isOption(param,"-v","--version") ) { printVersionAndExit=1; }
+            else if ( isOption(param,"-l","--lines"  ) ) { getLineRange(&firstLine,&lastLine,argc,argv,&i); }
+        }
+    }
     
-    if (argc>=2) {
-        printLines(argv[1], -1, -1, NULL);
+    /* print help or version if requested */
+    if ( printHelpAndExit    ) { i=0; while (help[i]!=NULL) { printf("%s\n",help[i++]); } return 0; }
+    if ( printVersionAndExit ) { printf("LINES version %s\n%s\n", VERSION, COPYRIGHT);    return 0; }
+    
+    /* print all requested files */
+    for (i=1; i<argc; ++i) { param=argv[i];
+        printf("\n");
+        if ( param[0]!='-' ) { printLines(param,firstLine,lastLine,textToFind); }
+        printf("\n");
     }
     return 0;
 }
