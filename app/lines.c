@@ -152,9 +152,10 @@ int main(int argc, char *argv[]) {
     
     /* print all requested files */
     for (i=1; i<argc; ++i) { param=argv[i];
-        printf("\n");
-        if ( param[0]!='-' ) { printLines(param,firstLine,lastLine,textToFind); }
-        printf("\n");
+        if ( param[0]!='-' ) {
+            printLines(param,firstLine,lastLine,textToFind);
+            printf("\n");
+        }
     }
     return 0;
 }
