@@ -60,16 +60,17 @@ typedef enum TXTF_NEWLINE {
 
 
 typedef struct TXTFILE {
-    FILE* file;
-    char* buffer;
-    int   bufferSize;
-    char* bufferEnd;
-    char* nextLine;
-    char  initialBuffer[TXTFILE_INI_BUFSIZE];
-    char* expandedBuffer;
-    int   moreData;
+    FILE*         file;
+    char*         buffer;
+    int           bufferSize;
+    char*         bufferEnd;
+    char*         nextLine;
     TXTF_ENCODING encoding;
     TXTF_NEWLINE  newline;
+    unsigned int  moreDataAvailable;
+    unsigned int  isEncodingSupported;
+    char*         expandedBuffer;
+    char          initialBuffer[TXTFILE_INI_BUFSIZE];
 } TXTFILE;
 
 
@@ -130,9 +131,9 @@ static char* txtf__readmoredata(TXTFILE* txtfile) {
     }
     if (bytesToKeep) { memmove(txtfile->buffer, txtfile->nextLine, bytesToKeep); }
     bytesRead = (int)fread(&txtfile->buffer[bytesToKeep], sizeof(char), bytesToLoad, txtfile->file);
-    txtfile->moreData  = (bytesRead==bytesToLoad);
-    txtfile->nextLine  = txtfile->buffer;
-    txtfile->bufferEnd = &txtfile->buffer[bytesToKeep+bytesRead];
+    txtfile->moreDataAvailable = (bytesRead==bytesToLoad);
+    txtfile->nextLine          = txtfile->buffer;
+    txtfile->bufferEnd         = &txtfile->buffer[bytesToKeep+bytesRead];
     if (bufferToFree) { free(bufferToFree); }
     return txtfile->nextLine;
 }
@@ -141,20 +142,34 @@ static void txtf__detectencoding(TXTFILE* txtfile) {
     static const unsigned char UTF8_BOM[]     = { 239, 187, 191 };
     static const unsigned char UTF16_BE_BOM[] = { 254, 255 };
     static const unsigned char UTF16_LE_BOM[] = { 255, 254 };
-    
-    char* ptr; int len;
+    int len, count, oddzeros, evenzeros, notext, isEncodingSupported; unsigned char *start, *ptr;
+    TXTF_ENCODING encoding = TXTF_ENCODING_BINARY;
+    TXTF_NEWLINE  newline  = TXTF_NEWLINE_UNIX;
     assert( txtfile!=NULL );
     
-    txtfile->encoding = TXTF_ENCODING_UTF8;
-    txtfile->newline  = TXTF_NEWLINE_UNIX;
+    /* detect encoding using BOM (byte order mask) */
+    start = (unsigned char*)txtfile->nextLine;
+    len   = (int)(txtfile->bufferEnd-txtfile->nextLine);
+    if      (len>=3 && memcmp(start,UTF8_BOM    ,3)==0) { encoding=TXTF_ENCODING_UTF8_BOM    ; start+=3; }
+    else if (len>=2 && memcmp(start,UTF16_BE_BOM,2)==0) { encoding=TXTF_ENCODING_UTF16_BE_BOM; start+=2; }
+    else if (len>=2 && memcmp(start,UTF16_LE_BOM,2)==0) { encoding=TXTF_ENCODING_UTF16_LE_BOM; start+=2; }
     
-    /* detecting BOM (byte order mask) */
-    ptr = txtfile->nextLine;
-    len = (int)(txtfile->bufferEnd-txtfile->nextLine);
-    if      (len>=3 && memcmp(ptr,UTF8_BOM    ,3)==0) { txtfile->encoding=TXTF_ENCODING_UTF8_BOM    ; ptr+=3; }
-    else if (len>=2 && memcmp(ptr,UTF16_BE_BOM,2)==0) { txtfile->encoding=TXTF_ENCODING_UTF16_BE_BOM; ptr+=2; }
-    else if (len>=2 && memcmp(ptr,UTF16_LE_BOM,2)==0) { txtfile->encoding=TXTF_ENCODING_UTF16_LE_BOM; ptr+=2; }
-    txtfile->nextLine = ptr;
+    /* detect encoding using an heuristic algorithm */
+    else {
+        oddzeros=evenzeros=notext=0; ptr=start; count=len/2; while (count--) {
+            if (*ptr==0) { ++oddzeros;  } else if (*ptr<=8 || (14<=*ptr && *ptr<=31)) { ++notext; } ++ptr;
+            if (*ptr==0) { ++evenzeros; } else if (*ptr<=8 || (14<=*ptr && *ptr<=31)) { ++notext; } ++ptr;
+        }
+        if      (oddzeros<(evenzeros/8)) { encoding=TXTF_ENCODING_UTF16_LE; }
+        else if (evenzeros<(oddzeros/8)) { encoding=TXTF_ENCODING_UTF16_BE; }
+        else if (notext==0)              { encoding=TXTF_ENCODING_UTF8;     }
+    }
+    
+    /* store results and return */
+    isEncodingSupported = (encoding==TXTF_ENCODING_UTF8) || (encoding==TXTF_ENCODING_UTF8_BOM);
+    txtfile->encoding = encoding;
+    txtfile->newline  = newline;
+    txtfile->nextLine = txtfissupported(txtfile) ? (char*)start : NULL;
 }
 
 
@@ -168,13 +183,13 @@ TXTFILE* txtfopen(const char* filename, const char* mode) {
     file = fopen(filename,mode);
     if (file) {
         txtfile = malloc(sizeof(TXTFILE));
-        txtfile->file           = file;
-        txtfile->buffer         = txtfile->initialBuffer;
-        txtfile->bufferSize     = TXTFILE_INI_BUFSIZE;
-        txtfile->nextLine       = txtfile->buffer;
-        txtfile->bufferEnd      = txtfile->nextLine;
-        txtfile->expandedBuffer = NULL;
-        txtfile->moreData       = 0;
+        txtfile->file              = file;
+        txtfile->buffer            = txtfile->initialBuffer;
+        txtfile->bufferSize        = TXTFILE_INI_BUFSIZE;
+        txtfile->nextLine          = txtfile->buffer;
+        txtfile->bufferEnd         = txtfile->nextLine;
+        txtfile->expandedBuffer    = NULL;
+        txtfile->moreDataAvailable = 0;
         
         /* read first chunk of data */
         txtf__readmoredata(txtfile);
@@ -199,8 +214,8 @@ char* txtfgetline(TXTFILE* txtfile) {
         /* end-of-line NOT found in buffer */
         /* if more data is available -> load more data into buffer and SEARCH AGAIN (ptr=line) */
         /* otherwise the end of file was reached -> mark it with a string terminator '\0'      */
-        else if (txtfile->moreData) { ptr=line=txtf__readmoredata(txtfile);  }
-        else                        { *ptr='\0'; ptr=NULL; /* end-of-file */ }
+        else if (txtfile->moreDataAvailable) { ptr=line=txtf__readmoredata(txtfile);  }
+        else                                 { *ptr='\0'; ptr=NULL; /* end-of-file */ }
     }
     txtfile->nextLine = ptr;
     return line;
