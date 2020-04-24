@@ -108,7 +108,7 @@ extern int txtfclose(TXTFILE* txtfile);
 #include <stdlib.h>
 #include <string.h>
 
-char* txtf__readmoredata(TXTFILE* txtfile) {
+static char* txtf__readmoredata(TXTFILE* txtfile) {
     int bytesToKeep, bytesToLoad, bytesRead;
     char* bufferToFree=NULL;
     
@@ -131,7 +131,7 @@ char* txtf__readmoredata(TXTFILE* txtfile) {
     return txtfile->nextLine;
 }
 
-void txtf__detectencoding(TXTFILE* txtfile) {
+static void txtf__detectencoding(TXTFILE* txtfile) {
     static const unsigned char UTF8_BOM[]     = { 239, 187, 191 };
     static const unsigned char UTF16_BE_BOM[] = { 254, 255 };
     static const unsigned char UTF16_LE_BOM[] = { 255, 254 };
