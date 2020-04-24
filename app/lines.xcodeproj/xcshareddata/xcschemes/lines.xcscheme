@@ -53,7 +53,11 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "-l 2:8"
+            argument = "-r 2:6"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-s aquaduct"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
@@ -61,7 +65,27 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "../test/utf16le.txt"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "../test/utf16be.txt"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "../test/utf8-bom.txt"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "../test/utf16le-bom.txt"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "../test/utf16be-bom.txt"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "../test/binary.txt"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
