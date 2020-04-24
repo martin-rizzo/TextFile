@@ -33,9 +33,30 @@
 #include <stdio.h>
 #include <string.h>
 
-/* Includes the 'txtfile.h' library and its implementation */
+/* includes the 'txtfile.h' library and its implementation */
 #define TXTFILE_IMPLEMENTATION
 #include "../txtfile.h"
+
+
+
+/*=================================================================================================================*/
+#pragma mark - > HELPER FUNCTIONS
+
+/**
+ * Returns TRUE if the line sould be printed
+ * @param lineNumber    the line number of the line to evaluate
+ * @param line          the text contained in the line
+ * @param firstLine     number of the first line to prinet (0 = print from the begin of the file)
+ * @param lastLine      number of the last line to print (0 = print until the end of the file)
+ * @param textToFind    print only lines containing this text (NULL = print all lines)
+ */
+#define shouldPrint(lineNumber, line, firstLine, lastLine, textToFind) (\
+    (line!=NULL)                                &&                      \
+    (firstLine<=0     || firstLine<=lineNumber) &&                      \
+    (lastLine <=0     || lineNumber<=lastLine)  &&                      \
+    (textToFind==NULL || strstr(line,textToFind)!=NULL)                 \
+)
+
 
 
 static void printEncoding(const char* filename, TXTFILE* txtfile) {
@@ -62,12 +83,6 @@ static void printEncoding(const char* filename, TXTFILE* txtfile) {
     printf("%s : %s : %s\n", filename, newline, encoding);
 }
 
-#define shouldPrint(lineNumber, line, firstLine, lastLine, textToFind) (\
-    (line!=NULL)                                &&                      \
-    (firstLine<=0     || firstLine<=lineNumber) &&                      \
-    (lastLine <=0     || lineNumber<=lastLine)  &&                      \
-    (textToFind==NULL || strstr(line,textToFind)!=NULL)                 \
-)
 
 
 static void printLines(const char* filename, int firstLine, int lastLine, const char* textToFind) {
@@ -125,24 +140,31 @@ static void getLineRange(int* out_firstLine, int* out_lastLine, int argc, char *
  * @param argv  An array containing each command-line parameter (starting at argv[1])
  */
 int main(int argc, char *argv[]) {
+    const char **files; int fileCount;
     const char *textToFind=NULL, *param; int i;
     int firstLine=0, lastLine=0;
     int printHelpAndExit=0, printVersionAndExit=0;
     const char *help[] = {
         "USAGE: lines [options] file1.txt file2.txt ...","",
         "  OPTIONS:",
-        "    -h, --help            display this help and exit",
-        "    -v, --version         output version information and exit",
+        "    -r, --ranges <a>:<b>   print only lines in the provided range, ex: --range 4:16",
+        "    -s, --search <word>    print only lines that contain the provided word, ex: --search dog",
+        "    -h, --help             display this help and exit",
+        "    -v, --version          output version information and exit",
         NULL
     };
-
+    
+    files = malloc(argc * sizeof(char*));
 
     /* process all flags & options */
+    fileCount=0;
     for (i=1; i<argc; ++i) { param=argv[i];
-        if ( param[0]=='-' ) {
-            if      ( isOption(param,"-h","--help")    ) { printHelpAndExit   =1; }
+        if ( param[0]!='-' ) { files[fileCount++]=param; }
+        else {
+            if      ( isOption(param,"-r","--range"  ) ) { getLineRange(&firstLine,&lastLine,argc,argv,&i); }
+            else if ( isOption(param,"-s","--search" ) ) { ++i; textToFind=(i<argc ? argv[i] :  NULL);      }
+            else if ( isOption(param,"-h","--help")    ) { printHelpAndExit   =1; }
             else if ( isOption(param,"-v","--version") ) { printVersionAndExit=1; }
-            else if ( isOption(param,"-l","--lines"  ) ) { getLineRange(&firstLine,&lastLine,argc,argv,&i); }
         }
     }
     
@@ -151,11 +173,10 @@ int main(int argc, char *argv[]) {
     if ( printVersionAndExit ) { printf("LINES version %s\n%s\n", VERSION, COPYRIGHT);    return 0; }
     
     /* print all requested files */
-    for (i=1; i<argc; ++i) { param=argv[i];
-        if ( param[0]!='-' ) {
-            printLines(param,firstLine,lastLine,textToFind);
-            printf("\n");
-        }
+    for (i=0; i<fileCount; ++i) {
+        printLines(files[i],firstLine,lastLine,textToFind);
+        printf("\n");
     }
+    free(files);
     return 0;
 }
