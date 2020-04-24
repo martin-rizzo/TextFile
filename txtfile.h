@@ -32,7 +32,7 @@
 #ifndef TXTFILE_H_INCLUDED__
 #define TXTFILE_H_INCLUDED__
 
-
+#include <assert.h>
 #include <stdio.h>
 
 
@@ -50,27 +50,27 @@ typedef enum TXTF_ENCODING {
     TXTF_ENCODING_BINARY        /* < invalid text file (it's likely a binary file) */
 } TXTF_ENCODING;
 
-typedef enum TXTF_NEWLINE {
-    TXTF_NEWLINE_WINDOWS,    /* < '\r\n'  =  MS Windows, DOS, CP/M, OS/2, Atari TOS, ...                   */
-    TXTF_NEWLINE_UNIX,       /* < '\n'    =  Linux, macOS, BeOS, Amiga, RISC OS, ...                       */
-    TXTF_NEWLINE_CLASSICMAC, /* < '\r'    =  Classic Mac OS, C64, C128, ZX Spectrum, TRS-80, Apple II, ... */
-    TXTF_NEWLINE_ACORNBBC,   /* < '\n\r'  =  Acorn BBC                                                     */
-    TXTF_NEWLINE_UNKNOWN
-} TXTF_NEWLINE;
+typedef enum TXTF_EOL {
+    TXTF_EOL_WINDOWS,    /* < '\r\n'  =  MS Windows, DOS, CP/M, OS/2, Atari TOS, ...                   */
+    TXTF_EOL_UNIX,       /* < '\n'    =  Linux, macOS, BeOS, Amiga, RISC OS, ...                       */
+    TXTF_EOL_CLASSICMAC, /* < '\r'    =  Classic Mac OS, C64, C128, ZX Spectrum, TRS-80, Apple II, ... */
+    TXTF_EOL_ACORNBBC,   /* < '\n\r'  =  Acorn BBC                                                     */
+    TXTF_EOL_UNKNOWN
+} TXTF_EOL;
 
 
 typedef struct TXTFILE {
-    FILE*         file;
-    char*         buffer;
-    int           bufferSize;
-    char*         bufferEnd;
-    char*         nextLine;
-    TXTF_ENCODING encoding;
-    TXTF_NEWLINE  newline;
-    unsigned int  moreDataAvailable;
-    unsigned int  isEncodingSupported;
-    char*         expandedBuffer;
-    char          initialBuffer[TXTFILE_INI_BUFSIZE];
+    FILE*          file;
+    char*          buffer;
+    int            bufferSize;
+    char*          bufferEnd;
+    char*          nextLine;
+    TXTF_ENCODING  encoding;
+    TXTF_EOL       eol;
+    unsigned int   moreDataAvailable;
+    unsigned int   isEncodingSupported;
+    char*          expandedBuffer;
+    char           initialBuffer[TXTFILE_INI_BUFSIZE];
 } TXTFILE;
 
 
@@ -144,7 +144,7 @@ static void txtf__detectencoding(TXTFILE* txtfile) {
     static const unsigned char UTF16_LE_BOM[] = { 255, 254 };
     int len, count, oddzeros, evenzeros, notext, isEncodingSupported; unsigned char *start, *ptr;
     TXTF_ENCODING encoding = TXTF_ENCODING_BINARY;
-    TXTF_NEWLINE  newline  = TXTF_NEWLINE_UNIX;
+    TXTF_EOL      eol      = TXTF_EOL_UNIX;
     assert( txtfile!=NULL );
     
     /* detect encoding using BOM (byte order mask) */
@@ -168,7 +168,7 @@ static void txtf__detectencoding(TXTFILE* txtfile) {
     /* store results and return */
     isEncodingSupported = (encoding==TXTF_ENCODING_UTF8) || (encoding==TXTF_ENCODING_UTF8_BOM);
     txtfile->encoding = encoding;
-    txtfile->newline  = newline;
+    txtfile->eol      = eol;
     txtfile->nextLine = txtfissupported(txtfile) ? (char*)start : NULL;
 }
 

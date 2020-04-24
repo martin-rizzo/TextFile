@@ -87,7 +87,7 @@ static void readRange(int* out_firstLine, int* out_lastLine, int argc, char *arg
  * @param txtfile  The text file to examine (it should be already open with 'txtfopen')
  */
 static void printEncoding(TXTFILE* txtfile) {
-    const char *encoding, *newline;
+    const char *encoding, *eol;
     
     assert( txtfile!=NULL );
     
@@ -100,14 +100,14 @@ static void printEncoding(TXTFILE* txtfile) {
         case TXTF_ENCODING_UTF16_BE_BOM:  encoding = "UTF-16 BE with BOM"; break;
         case TXTF_ENCODING_BINARY:        encoding = "Binary"; break;
     }
-    switch (txtfile->newline) {
-        case TXTF_NEWLINE_UNIX:          newline = "Unix"; break;
-        case TXTF_NEWLINE_WINDOWS:       newline = "Windows"; break;
-        case TXTF_NEWLINE_CLASSICMAC:    newline = "Classic Mac"; break;
-        case TXTF_NEWLINE_ACORNBBC:      newline = "Acorn BBC"; break;
-        case TXTF_NEWLINE_UNKNOWN:       newline = "Unknown"; break;
+    switch (txtfile->eol) {
+        case TXTF_EOL_UNIX:        eol = "Unix"; break;
+        case TXTF_EOL_WINDOWS:     eol = "Windows"; break;
+        case TXTF_EOL_CLASSICMAC:  eol = "Classic Mac"; break;
+        case TXTF_EOL_ACORNBBC:    eol = "Acorn BBC"; break;
+        case TXTF_EOL_UNKNOWN:     eol = "Unknown"; break;
     }
-    printf("%s : %s\n", newline, encoding);
+    printf("%s : %s\n", eol, encoding);
 }
 
 /**
