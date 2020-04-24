@@ -101,6 +101,12 @@ extern char* txtfgets(char* buffer, int bufsize, TXTFILE* txtfile);
 extern int txtfclose(TXTFILE* txtfile);
 
 
+#define txtfissupported(txtfile) (              \
+  (txtfile->encoding==TXTF_ENCODING_UTF8    ) ||  \
+  (txtfile->encoding==TXTF_ENCODING_UTF8_BOM)     \
+)
+
+
 /*=================================================================================================================*/
 #pragma mark - > IMPLEMENTATION
 
