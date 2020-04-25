@@ -112,12 +112,14 @@ static void printEncoding(TXTFILE* txtfile) {
 
 /**
  * Reads a file and prints all lines of text that matches the provided condition
- * @param filename    The path to the file to print
- * @param firstLine   The number of the first line to prinet (0 = print from the begin of the file)
- * @param lastLine    The number of the last line to print (0 = print until the end of the file)
- * @param textToFind  The text that the line must contain to be printed (NULL = print all lines)
+ * @param filename      The path to the file to print
+ * @param printNumbers  TRUE if line numbers must be printed in each line of text
+ * @param firstLine     The number of the first line to prinet (0 = print from the begin of the file)
+ * @param lastLine      The number of the last line to print (0 = print until the end of the file)
+ * @param textToFind    The text that the line must contain to be printed (NULL = print all lines)
  */
-static void printLinesOfText(const char* filename, int firstLine, int lastLine, const char* textToFind) {
+static void printLinesOfText(const char* filename, int printNumbers,
+                             int firstLine, int lastLine, const char* textToFind) {
     TXTFILE* txtfile; int lineNumber; const char* line;
     assert( filename!=NULL );
     
@@ -131,7 +133,8 @@ static void printLinesOfText(const char* filename, int firstLine, int lastLine, 
         {
             line = txtfgetline(txtfile);
             if ( shouldPrint(lineNumber,line,firstLine,lastLine,textToFind) ) {
-                printf("%d: %s\n", lineNumber, line);
+                if (printNumbers) { printf("%3d| %s\n", lineNumber, line); }
+                else              { printf("| %s\n", line);                }
             }
             ++lineNumber;
         }
@@ -160,11 +163,12 @@ static void printLinesOfText(const char* filename, int firstLine, int lastLine, 
 int main(int argc, char *argv[]) {
     const char **files; int fileCount;
     const char *textToFind=NULL, *param; int i;
-    int firstLine=0, lastLine=0;
+    int firstLine=0, lastLine=0, printNumbers=0;
     int printHelpAndExit=0, printVersionAndExit=0;
     const char *help[] = {
         "USAGE: lines [options] file1.txt file2.txt ...","",
         "  OPTIONS:",
+        "    -n, --number           number the lines, starting at 1"
         "    -r, --ranges <a>:<b>   print only lines in the provided range, ex: --range 4:16",
         "    -s, --search <word>    print only lines that contain the provided word, ex: --search dog",
         "    -h, --help             display this help and exit",
@@ -179,10 +183,11 @@ int main(int argc, char *argv[]) {
     for (i=1; i<argc; ++i) { param=argv[i];
         if ( param[0]!='-' ) { files[fileCount++]=param; }
         else {
-            if      ( isOption(param,"-r","--range"  ) ) { readRange(&firstLine,&lastLine,argc,argv,&i); }
-            else if ( isOption(param,"-s","--search" ) ) { ++i; textToFind=(i<argc ? argv[i] :  NULL);      }
-            else if ( isOption(param,"-h","--help")    ) { printHelpAndExit   =1; }
-            else if ( isOption(param,"-v","--version") ) { printVersionAndExit=1; }
+            if      ( isOption(param,"-n","--number" ) ) { printNumbers=1;                               }
+            else if ( isOption(param,"-r","--range"  ) ) { readRange(&firstLine,&lastLine,argc,argv,&i); }
+            else if ( isOption(param,"-s","--search" ) ) { ++i; textToFind=(i<argc ? argv[i] :  NULL);   }
+            else if ( isOption(param,"-h","--help")    ) { printHelpAndExit=1;                           }
+            else if ( isOption(param,"-v","--version") ) { printVersionAndExit=1;                        }
         }
     }
     
@@ -192,7 +197,7 @@ int main(int argc, char *argv[]) {
     
     /* print all requested files */
     for (i=0; i<fileCount; ++i) {
-        printLinesOfText(files[i],firstLine,lastLine,textToFind);
+        printLinesOfText(files[i],printNumbers,firstLine,lastLine,textToFind);
         printf("\n");
     }
     free(files);
