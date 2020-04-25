@@ -138,13 +138,24 @@ static char* txtf__readmoredata(TXTFILE* txtfile) {
     return txtfile->nextLine;
 }
 
+static TXTF_EOL txtf__selecteol(int count_r, int count_rn, int count_n, int count_nr) {
+    int max=count_r; TXTF_EOL eol=TXTF_EOL_CLASSICMAC;
+    if (count_rn>max) { max=count_rn; eol=TXTF_EOL_WINDOWS;  }
+    if (count_n >max) { max=count_n ; eol=TXTF_EOL_UNIX;     }
+    if (count_nr>max) { max=count_nr; eol=TXTF_EOL_ACORNBBC; }
+    if (max==0) { eol=TXTF_EOL_UNKNOWN; }
+    return eol;
+}
+
 static void txtf__detectencoding(TXTFILE* txtfile) {
     static const unsigned char UTF8_BOM[]     = { 239, 187, 191 };
     static const unsigned char UTF16_BE_BOM[] = { 254, 255 };
     static const unsigned char UTF16_LE_BOM[] = { 255, 254 };
-    int len, count, oddzeros, evenzeros, notext, isEncodingSupported; unsigned char *start, *ptr;
+    int len, count, oddzeros, evenzeros, notext, isEncodingSupported;
+    int eol_rn, eol_r, eol_nr, eol_n;
+    unsigned char *start, *ptr;
     TXTF_ENCODING encoding = TXTF_ENCODING_BINARY;
-    TXTF_EOL      eol      = TXTF_EOL_UNIX;
+    TXTF_EOL      eol      = TXTF_EOL_UNKNOWN;
     assert( txtfile!=NULL );
     
     /* detect encoding using BOM (byte order mask) */
@@ -156,13 +167,24 @@ static void txtf__detectencoding(TXTFILE* txtfile) {
     
     /* detect encoding using an heuristic algorithm */
     else {
-        oddzeros=evenzeros=notext=0; ptr=start; count=len/2; while (count--) {
+        oddzeros = evenzeros = notext = 0;
+        ptr=start; count=len/2; while (count-->0) {
             if (*ptr==0) { ++oddzeros;  } else if (*ptr<=8 || (14<=*ptr && *ptr<=31)) { ++notext; } ++ptr;
             if (*ptr==0) { ++evenzeros; } else if (*ptr<=8 || (14<=*ptr && *ptr<=31)) { ++notext; } ++ptr;
         }
         if      (oddzeros<(evenzeros/8)) { encoding=TXTF_ENCODING_UTF16_LE; }
         else if (evenzeros<(oddzeros/8)) { encoding=TXTF_ENCODING_UTF16_BE; }
         else if (notext==0)              { encoding=TXTF_ENCODING_UTF8;     }
+    }
+    
+    /* detect end-of-line for UTF-8 & UTF-8 with BOM */
+    if (encoding==TXTF_ENCODING_UTF8 || encoding==TXTF_ENCODING_UTF8_BOM) {
+        eol_rn = eol_r = eol_nr = eol_n = 0;
+        ptr=start; for (count=len-2; count>0; --count,++ptr) {
+            if      (ptr[0]=='\r') { if (ptr[1]=='\n') { ++eol_rn; } else { ++eol_r; } }
+            else if (ptr[0]=='\n') { if (ptr[1]=='\r') { ++eol_nr; } else { ++eol_n; } }
+        }
+        eol = txtf__selecteol(eol_r, eol_rn, eol_n, eol_nr);
     }
     
     /* store results and return */

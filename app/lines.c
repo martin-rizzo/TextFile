@@ -105,9 +105,9 @@ static void printEncoding(TXTFILE* txtfile) {
         case TXTF_EOL_WINDOWS:     eol = "Windows"; break;
         case TXTF_EOL_CLASSICMAC:  eol = "Classic Mac"; break;
         case TXTF_EOL_ACORNBBC:    eol = "Acorn BBC"; break;
-        case TXTF_EOL_UNKNOWN:     eol = "Unknown"; break;
+        case TXTF_EOL_UNKNOWN:     eol = "-"; break;
     }
-    printf("%s : %s\n", eol, encoding);
+    printf("%s : %s\n", encoding, eol);
 }
 
 /**
