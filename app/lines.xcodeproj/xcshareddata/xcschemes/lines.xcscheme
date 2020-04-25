@@ -53,6 +53,10 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
+            argument = "-n"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "-r 2:6"
             isEnabled = "YES">
          </CommandLineArgument>
