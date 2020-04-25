@@ -34,11 +34,12 @@
 
 #include <assert.h>
 #include <stdio.h>
-
-
 #define TXTFILE_INI_BUFSIZE 512
 #define TXTFILE_MAX_BUFSIZE (32*1024)
 
+
+/*=================================================================================================================*/
+#pragma mark - > TXTFILE INTERFACE
 
 typedef enum TXTF_ENCODING {
     TXTF_ENCODING_UTF8,         /* < UTF8, ASCI, Windows-1252, ...                 */
@@ -58,7 +59,6 @@ typedef enum TXTF_EOL {
     TXTF_EOL_UNKNOWN
 } TXTF_EOL;
 
-
 typedef struct TXTFILE {
     FILE*          file;
     char*          buffer;
@@ -73,12 +73,20 @@ typedef struct TXTFILE {
     char           initialBuffer[TXTFILE_INI_BUFSIZE];
 } TXTFILE;
 
-
-
+/**
+ * Opens a file and returns a TXTFILE object that controls it
+ * @param filename  The path to the file to open
+ * @param mode      A null-terminated string determining the file access mode (only the "r" is supported)
+ * @returns         The pointer to the TXTFILE object that controls the opened file or NULL if an error has ocurred
+ */
 extern TXTFILE* txtfopen(const char* filename, const char* mode);
 
+/**
+ * Read a line of text from the provided file
+ * @param txtfile   The pointer to a TXTFILE object that controls the file to read the data from
+ * @returns         A pointer to the buffer containing the read line or NULL if there isn't more lines to read
+ */
 extern char* txtfgetline(TXTFILE* txtfile);
-
 
 /**
  * This function is for compatibility with preexistent source code using standard file access
@@ -95,7 +103,7 @@ extern char* txtfgetline(TXTFILE* txtfile);
 extern char* txtfgets(char* buffer, int bufsize, TXTFILE* txtfile);
 
 /**
- * Closes the file associated with the provided 'txtfile' pointer and releases any related resources
+ * Closes the file associated with the provided TXTFILE object and releases all related resources
  * @param txtfile  Pointer to a TXTFILE object that specifies the file to close
  * @returns        Zero (0) if the file is successfully closed
  */
@@ -109,7 +117,7 @@ extern int txtfclose(TXTFILE* txtfile);
 
 
 /*=================================================================================================================*/
-#pragma mark - > IMPLEMENTATION
+#pragma mark - > INTERNAL PRIVATE FUNCTIONS
 
 #ifdef TXTFILE_IMPLEMENTATION
 #include <stdlib.h>
@@ -211,11 +219,19 @@ static void txtf__detectencoding(TXTFILE* txtfile) {
 
 
 /*=================================================================================================================*/
-#pragma mark - > IMPLEMENTATION
+#pragma mark - > TXTFILE IMPLEMENTATION
 
-
+/**
+ * Opens a file and returns a TXTFILE object that controls it
+ *
+ * @param filename  The path to the file to open
+ * @param mode      A null-terminated string determining the file access mode (only the "r" is supported)
+ * @returns         The pointer to the TXTFILE object that controls the opened file or NULL if an error has ocurred.
+ */
 TXTFILE* txtfopen(const char* filename, const char* mode) {
     TXTFILE* txtfile=NULL; FILE* file;
+    assert( filename!=NULL );
+    assert( mode[0]=='r' && mode[1]=='\0' );
 
     file = fopen(filename,mode);
     if (file) {
@@ -235,6 +251,11 @@ TXTFILE* txtfopen(const char* filename, const char* mode) {
     return txtfile;
 }
 
+/**
+ * Read a line of text from the provided file
+ * @param txtfile   The pointer to a TXTFILE object that controls the file to read the data from
+ * @returns         A pointer to the buffer containing the read line or NULL if there isn't more lines to read
+ */
 char* txtfgetline(TXTFILE* txtfile) {
     char *ptr, *line;
     assert( txtfile!=NULL && txtfile->file!=NULL );
@@ -258,6 +279,18 @@ char* txtfgetline(TXTFILE* txtfile) {
     return line;
 }
 
+/**
+ * This function is for compatibility with preexistent source code using standard file access
+ *
+ * Reads characters from text file until (bufsize-1) characters have been read or either
+ * a newline or end-of-file is reached, whichever happens first.
+ *
+ * @param buffer   Pointer to the buffer of chars where the string read will be stored
+ * @param bufsize  Maximum number of bytes to be copied into 'buffer' (including '\0')
+ * @param txtfile  Pointer to a TXTFILE object that identifies a file opened with the 'txtfopen' function
+ * @returns
+ *     pointer to 'buffer' when success or NULL when no more lines can be read
+ */
 char* txtfgets(char* buffer, int bufsize, TXTFILE* txtfile) {
     char* line; int length;
     assert( buffer!=NULL && bufsize>2 );
@@ -270,7 +303,11 @@ char* txtfgets(char* buffer, int bufsize, TXTFILE* txtfile) {
     return buffer;
 }
 
-
+/**
+ * Closes the file associated with the provided TXTFILE object and releases all related resources
+ * @param txtfile  Pointer to a TXTFILE object that specifies the file to close
+ * @returns        Zero (0) if the file is successfully closed
+ */
 int txtfclose(TXTFILE* txtfile) {
     if (txtfile!=NULL) {
         free(txtfile->expandedBuffer);
