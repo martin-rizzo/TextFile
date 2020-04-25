@@ -152,10 +152,9 @@ static void txtf__detectencoding(TXTFILE* txtfile) {
     static const unsigned char UTF16_BE_BOM[] = { 254, 255 };
     static const unsigned char UTF16_LE_BOM[] = { 255, 254 };
     int len, count, oddzeros, evenzeros, notext, isEncodingSupported;
-    int eol_rn, eol_r, eol_nr, eol_n;
-    unsigned char *start, *ptr;
+    int eol_rn=0, eol_r=0, eol_nr=0, eol_n=0;
+    unsigned char *ptr, *start;
     TXTF_ENCODING encoding = TXTF_ENCODING_BINARY;
-    TXTF_EOL      eol      = TXTF_EOL_UNKNOWN;
     assert( txtfile!=NULL );
     
     /* detect encoding using BOM (byte order mask) */
@@ -176,21 +175,37 @@ static void txtf__detectencoding(TXTFILE* txtfile) {
         else if (evenzeros<(oddzeros/8)) { encoding=TXTF_ENCODING_UTF16_BE; }
         else if (notext==0)              { encoding=TXTF_ENCODING_UTF8;     }
     }
-    
+
     /* detect end-of-line for UTF-8 & UTF-8 with BOM */
     if (encoding==TXTF_ENCODING_UTF8 || encoding==TXTF_ENCODING_UTF8_BOM) {
-        eol_rn = eol_r = eol_nr = eol_n = 0;
         ptr=start; for (count=len-2; count>0; --count,++ptr) {
             if      (ptr[0]=='\r') { if (ptr[1]=='\n') { ++eol_rn; } else { ++eol_r; } }
             else if (ptr[0]=='\n') { if (ptr[1]=='\r') { ++eol_nr; } else { ++eol_n; } }
         }
-        eol = txtf__selecteol(eol_r, eol_rn, eol_n, eol_nr);
     }
-    
+    /* detect end-of-line for UTF-16BE & UTF-16BE with BOM */
+    else if (encoding==TXTF_ENCODING_UTF16_BE || encoding==TXTF_ENCODING_UTF16_BE_BOM) {
+        ptr=start; for (count=(len/2)-2; count>0; --count,ptr+=2) {
+            if (ptr[0]==0) {
+                if      (ptr[1]=='\r') { if (ptr[2]==0 && ptr[3]=='\n') { ++eol_rn; } else { ++eol_r; } }
+                else if (ptr[1]=='\n') { if (ptr[2]==0 && ptr[3]=='\r') { ++eol_nr; } else { ++eol_n; } }
+            }
+        }
+    }
+    /* detect end-of-line for UTF-16LE & UTF-16LE with BOM */
+    else if (encoding==TXTF_ENCODING_UTF16_LE || encoding==TXTF_ENCODING_UTF16_LE_BOM) {
+        ptr=start; for (count=(len/2)-2; count>0; --count,ptr+=2) {
+            if (ptr[1]==0) {
+                if      (ptr[0]=='\r') { if (ptr[3]==0 && ptr[2]=='\n') { ++eol_rn; } else { ++eol_r; } }
+                else if (ptr[0]=='\n') { if (ptr[3]==0 && ptr[2]=='\r') { ++eol_nr; } else { ++eol_n; } }
+            }
+        }
+    }
+
     /* store results and return */
     isEncodingSupported = (encoding==TXTF_ENCODING_UTF8) || (encoding==TXTF_ENCODING_UTF8_BOM);
     txtfile->encoding = encoding;
-    txtfile->eol      = eol;
+    txtfile->eol      = txtf__selecteol(eol_r, eol_rn, eol_n, eol_nr);;
     txtfile->nextLine = txtfissupported(txtfile) ? (char*)start : NULL;
 }
 
