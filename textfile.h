@@ -1,11 +1,11 @@
 /**
- * @file       txtfile.h
+ * @file       textfile.h
  * @date       Apr 21, 2020
  * @author     Martin Rizzo | <martinrizzo@gmail.com>
  * @copyright  Copyright (c) 2020 Martin Rizzo.
  *             This project is released under the MIT License.
  * -------------------------------------------------------------------------
- *  TXTFILE - A portable, one-header library to read lines of text from file
+ *  TextFile - A portable, one-header library to read lines of text from file
  * -------------------------------------------------------------------------
  *  Copyright (c) 2020 Martin Rizzo
  *
@@ -29,64 +29,64 @@
  *  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * -------------------------------------------------------------------------
  */
-#ifndef TXTFILE_H_INCLUDED__
-#define TXTFILE_H_INCLUDED__
+#ifndef TEXTFILE_H_INCLUDED
+#define TEXTFILE_H_INCLUDED
 
 #include <assert.h>
 #include <stdio.h>
-#define TXTFILE_INI_BUFSIZE 512
-#define TXTFILE_MAX_BUFSIZE (32*1024)
+#define TEXTFILE_INI_BUFSIZE 512
+#define TEXTFILE_MAX_BUFSIZE (32*1024)
 
 
 /*=================================================================================================================*/
-#pragma mark - > TXTFILE INTERFACE
+#pragma mark - > TEXTFILE INTERFACE
 
-typedef enum TXTF_ENCODING {
-    TXTF_ENCODING_UTF8,         /* < UTF8, ASCI, Windows-1252, ...                 */
-    TXTF_ENCODING_UTF8_BOM,     /* < UTF8+BOM [confirmed]                          */
-    TXTF_ENCODING_UTF16_LE,     /* < UTF16 little-endian                           */
-    TXTF_ENCODING_UTF16_BE,     /* < UTF16 big-endian                              */
-    TXTF_ENCODING_UTF16_LE_BOM, /* < UTF16+BOM little-endian [confirmed]           */
-    TXTF_ENCODING_UTF16_BE_BOM, /* < UTF16+BOM big-endian [confirmed]              */
-    TXTF_ENCODING_BINARY        /* < invalid text file (it's likely a binary file) */
-} TXTF_ENCODING;
+typedef enum TEXTF_ENCODING {
+    TEXTF_ENCODING_UTF8,         /* < UTF8, ASCI, Windows-1252, ...                 */
+    TEXTF_ENCODING_UTF8_BOM,     /* < UTF8+BOM [confirmed]                          */
+    TEXTF_ENCODING_UTF16_LE,     /* < UTF16 little-endian                           */
+    TEXTF_ENCODING_UTF16_BE,     /* < UTF16 big-endian                              */
+    TEXTF_ENCODING_UTF16_LE_BOM, /* < UTF16+BOM little-endian [confirmed]           */
+    TEXTF_ENCODING_UTF16_BE_BOM, /* < UTF16+BOM big-endian [confirmed]              */
+    TEXTF_ENCODING_BINARY        /* < invalid text file (it's likely a binary file) */
+} TEXTF_ENCODING;
 
-typedef enum TXTF_EOL {
-    TXTF_EOL_WINDOWS,    /* < '\r\n'  =  MS Windows, DOS, CP/M, OS/2, Atari TOS, ...                   */
-    TXTF_EOL_UNIX,       /* < '\n'    =  Linux, macOS, BeOS, Amiga, RISC OS, ...                       */
-    TXTF_EOL_CLASSICMAC, /* < '\r'    =  Classic Mac OS, C64, C128, ZX Spectrum, TRS-80, Apple II, ... */
-    TXTF_EOL_ACORNBBC,   /* < '\n\r'  =  Acorn BBC                                                     */
-    TXTF_EOL_UNKNOWN
-} TXTF_EOL;
+typedef enum TEXTF_EOL {
+    TEXTF_EOL_WINDOWS,    /* < '\r\n'  =  MS Windows, DOS, CP/M, OS/2, Atari TOS, ...                   */
+    TEXTF_EOL_UNIX,       /* < '\n'    =  Linux, macOS, BeOS, Amiga, RISC OS, ...                       */
+    TEXTF_EOL_CLASSICMAC, /* < '\r'    =  Classic Mac OS, C64, C128, ZX Spectrum, TRS-80, Apple II, ... */
+    TEXTF_EOL_ACORNBBC,   /* < '\n\r'  =  Acorn BBC                                                     */
+    TEXTF_EOL_UNKNOWN
+} TEXTF_EOL;
 
-typedef struct TXTFILE {
+typedef struct TEXTFILE {
     FILE*          file;
     char*          buffer;
     int            bufferSize;
     char*          bufferEnd;
     char*          nextLine;
-    TXTF_ENCODING  encoding;
-    TXTF_EOL       eol;
+    TEXTF_ENCODING encoding;
+    TEXTF_EOL      eol;
     unsigned int   moreDataAvailable;
     unsigned int   isEncodingSupported;
     char*          expandedBuffer;
-    char           initialBuffer[TXTFILE_INI_BUFSIZE];
-} TXTFILE;
+    char           initialBuffer[TEXTFILE_INI_BUFSIZE];
+} TEXTFILE;
 
 /**
- * Opens a file and returns a TXTFILE object that controls it
+ * Opens a file and returns a TEXTFILE object that controls it
  * @param filename  The path to the file to open
  * @param mode      A null-terminated string determining the file access mode (only the "r" is supported)
- * @returns         The pointer to the TXTFILE object that controls the opened file or NULL if an error has ocurred
+ * @returns         The pointer to the TEXTFILE object that controls the opened file or NULL if an error has ocurred
  */
-extern TXTFILE* txtfopen(const char* filename, const char* mode);
+extern TEXTFILE* textfopen(const char* filename, const char* mode);
 
 /**
  * Read a line of text from the provided file
- * @param txtfile   The pointer to a TXTFILE object that controls the file to read the data from
+ * @param textfile  The pointer to a TEXTFILE object that controls the file to read the data from
  * @returns         A pointer to the buffer containing the read line or NULL if there isn't more lines to read
  */
-extern char* txtfgetline(TXTFILE* txtfile);
+extern char* textfgetline(TEXTFILE* textfile);
 
 /**
  * This function is for compatibility with preexistent source code using standard file access
@@ -96,81 +96,81 @@ extern char* txtfgetline(TXTFILE* txtfile);
  *
  * @param buffer   Pointer to the buffer of chars where the string read will be stored
  * @param bufsize  Maximum number of bytes to be copied into 'buffer' (including '\0')
- * @param txtfile  Pointer to a TXTFILE object that identifies a file opened with the 'txtfopen' function
+ * @param textfile Pointer to a TEXTFILE object that identifies a file opened with the 'textfopen' function
  * @returns
  *     pointer to 'buffer' when success or NULL when no more lines can be read
  */
-extern char* txtfgets(char* buffer, int bufsize, TXTFILE* txtfile);
+extern char* textfgets(char* buffer, int bufsize, TEXTFILE* textfile);
 
 /**
- * Closes the file associated with the provided TXTFILE object and releases all related resources
- * @param txtfile  Pointer to a TXTFILE object that specifies the file to close
+ * Closes the file associated with the provided TEXTFILE object and releases all related resources
+ * @param textfile Pointer to a TEXTFILE object that specifies the file to close
  * @returns        Zero (0) if the file is successfully closed
  */
-extern int txtfclose(TXTFILE* txtfile);
+extern int textfclose(TEXTFILE* textfile);
 
 
-#define txtfissupported(txtfile) (              \
-  (txtfile->encoding==TXTF_ENCODING_UTF8    ) ||  \
-  (txtfile->encoding==TXTF_ENCODING_UTF8_BOM)     \
+#define textfissupported(textfile) (                \
+  (textfile->encoding==TEXTF_ENCODING_UTF8    ) ||  \
+  (textfile->encoding==TEXTF_ENCODING_UTF8_BOM)     \
 )
 
 
 /*=================================================================================================================*/
 #pragma mark - > INTERNAL PRIVATE FUNCTIONS
 
-#ifdef TXTFILE_IMPLEMENTATION
+#ifdef TEXTFILE_IMPLEMENTATION
 #include <stdlib.h>
 #include <string.h>
 
-static char* txtf__readmoredata(TXTFILE* txtfile) {
+static char* textf__readmoredata(TEXTFILE* textfile) {
     int bytesToKeep, bytesToLoad, bytesRead;
     char* bufferToFree=NULL;
     
-    bytesToKeep = (int)(txtfile->bufferEnd - txtfile->nextLine);
-    bytesToLoad = (txtfile->bufferSize-2) - bytesToKeep;
+    bytesToKeep = (int)(textfile->bufferEnd - textfile->nextLine);
+    bytesToLoad = (textfile->bufferSize-2) - bytesToKeep;
     /* if not enough space to load a line of text -> expand buffer!! */
     if (bytesToLoad==0) {
-        bufferToFree = txtfile->expandedBuffer;
-        txtfile->bufferSize    *= 2;
-        txtfile->expandedBuffer = malloc(txtfile->bufferSize);
-        txtfile->buffer         = txtfile->expandedBuffer;
-        bytesToLoad = (txtfile->bufferSize-2) - bytesToKeep;
+        bufferToFree = textfile->expandedBuffer;
+        textfile->bufferSize    *= 2;
+        textfile->expandedBuffer = malloc(textfile->bufferSize);
+        textfile->buffer         = textfile->expandedBuffer;
+        bytesToLoad = (textfile->bufferSize-2) - bytesToKeep;
     }
-    if (bytesToKeep) { memmove(txtfile->buffer, txtfile->nextLine, bytesToKeep); }
-    bytesRead = (int)fread(&txtfile->buffer[bytesToKeep], sizeof(char), bytesToLoad, txtfile->file);
-    txtfile->moreDataAvailable = (bytesRead==bytesToLoad);
-    txtfile->nextLine          = txtfile->buffer;
-    txtfile->bufferEnd         = &txtfile->buffer[bytesToKeep+bytesRead];
+    if (bytesToKeep) { memmove(textfile->buffer, textfile->nextLine, bytesToKeep); }
+    bytesRead = (int)fread(&textfile->buffer[bytesToKeep], sizeof(char), bytesToLoad, textfile->file);
+    textfile->moreDataAvailable = (bytesRead==bytesToLoad);
+    textfile->nextLine          = textfile->buffer;
+    textfile->bufferEnd         = &textfile->buffer[bytesToKeep+bytesRead];
     if (bufferToFree) { free(bufferToFree); }
-    return txtfile->nextLine;
+    return textfile->nextLine;
 }
 
-static TXTF_EOL txtf__selecteol(int count_r, int count_rn, int count_n, int count_nr) {
-    int max=count_r; TXTF_EOL eol=TXTF_EOL_CLASSICMAC;
-    if (count_rn>max) { max=count_rn; eol=TXTF_EOL_WINDOWS;  }
-    if (count_n >max) { max=count_n ; eol=TXTF_EOL_UNIX;     }
-    if (count_nr>max) { max=count_nr; eol=TXTF_EOL_ACORNBBC; }
-    if (max==0) { eol=TXTF_EOL_UNKNOWN; }
+static TEXTF_EOL textf__selecteol(int count_r, int count_rn, int count_n, int count_nr) {
+    int max=count_r; TEXTF_EOL eol=TEXTF_EOL_CLASSICMAC;
+    if (count_rn>max) { max=count_rn; eol=TEXTF_EOL_WINDOWS;  }
+    if (count_n >max) { max=count_n ; eol=TEXTF_EOL_UNIX;     }
+    if (count_nr>max) { max=count_nr; eol=TEXTF_EOL_ACORNBBC; }
+    if (max==0) { eol=TEXTF_EOL_UNKNOWN; }
     return eol;
 }
 
-static void txtf__detectencoding(TXTFILE* txtfile) {
+static void textf__detectencoding(TEXTFILE* textfile) {
     static const unsigned char UTF8_BOM[]     = { 239, 187, 191 };
     static const unsigned char UTF16_BE_BOM[] = { 254, 255 };
     static const unsigned char UTF16_LE_BOM[] = { 255, 254 };
     int len, count, oddzeros, evenzeros, notext, isEncodingSupported;
     int eol_rn=0, eol_r=0, eol_nr=0, eol_n=0;
     unsigned char *ptr, *start;
-    TXTF_ENCODING encoding = TXTF_ENCODING_BINARY;
-    assert( txtfile!=NULL );
+    TEXTF_ENCODING encoding = TEXTF_ENCODING_BINARY;
+    assert( textfile!=NULL );
     
     /* detect encoding using BOM (byte order mask) */
-    start = (unsigned char*)txtfile->nextLine;
-    len   = (int)(txtfile->bufferEnd-txtfile->nextLine);
-    if      (len>=3 && memcmp(start,UTF8_BOM    ,3)==0) { encoding=TXTF_ENCODING_UTF8_BOM    ; start+=3; }
-    else if (len>=2 && memcmp(start,UTF16_BE_BOM,2)==0) { encoding=TXTF_ENCODING_UTF16_BE_BOM; start+=2; }
-    else if (len>=2 && memcmp(start,UTF16_LE_BOM,2)==0) { encoding=TXTF_ENCODING_UTF16_LE_BOM; start+=2; }
+    start = (unsigned char*)textfile->nextLine;
+    len   = (int)(textfile->bufferEnd - textfile->nextLine);
+    if      (len>=3 && memcmp(start,UTF8_BOM    ,3)==0) { encoding=TEXTF_ENCODING_UTF8_BOM    ; start+=3; }
+    else if (len>=2 && memcmp(start,UTF16_BE_BOM,2)==0) { encoding=TEXTF_ENCODING_UTF16_BE_BOM; start+=2; }
+    else if (len>=2 && memcmp(start,UTF16_LE_BOM,2)==0) { encoding=TEXTF_ENCODING_UTF16_LE_BOM; start+=2; }
     
     /* detect encoding using an heuristic algorithm */
     else {
@@ -179,20 +179,20 @@ static void txtf__detectencoding(TXTFILE* txtfile) {
             if (*ptr==0) { ++oddzeros;  } else if (*ptr<=8 || (14<=*ptr && *ptr<=31)) { ++notext; } ++ptr;
             if (*ptr==0) { ++evenzeros; } else if (*ptr<=8 || (14<=*ptr && *ptr<=31)) { ++notext; } ++ptr;
         }
-        if      (oddzeros<(evenzeros/8)) { encoding=TXTF_ENCODING_UTF16_LE; }
-        else if (evenzeros<(oddzeros/8)) { encoding=TXTF_ENCODING_UTF16_BE; }
-        else if (notext==0)              { encoding=TXTF_ENCODING_UTF8;     }
+        if      (oddzeros<(evenzeros/8)) { encoding=TEXTF_ENCODING_UTF16_LE; }
+        else if (evenzeros<(oddzeros/8)) { encoding=TEXTF_ENCODING_UTF16_BE; }
+        else if (notext==0)              { encoding=TEXTF_ENCODING_UTF8;     }
     }
 
     /* detect end-of-line for UTF-8 & UTF-8 with BOM */
-    if (encoding==TXTF_ENCODING_UTF8 || encoding==TXTF_ENCODING_UTF8_BOM) {
+    if (encoding==TEXTF_ENCODING_UTF8 || encoding==TEXTF_ENCODING_UTF8_BOM) {
         ptr=start; for (count=len-2; count>0; --count,++ptr) {
             if      (ptr[0]=='\r') { if (ptr[1]=='\n') { ++eol_rn; } else { ++eol_r; } }
             else if (ptr[0]=='\n') { if (ptr[1]=='\r') { ++eol_nr; } else { ++eol_n; } }
         }
     }
     /* detect end-of-line for UTF-16BE & UTF-16BE with BOM */
-    else if (encoding==TXTF_ENCODING_UTF16_BE || encoding==TXTF_ENCODING_UTF16_BE_BOM) {
+    else if (encoding==TEXTF_ENCODING_UTF16_BE || encoding==TEXTF_ENCODING_UTF16_BE_BOM) {
         ptr=start; for (count=(len/2)-2; count>0; --count,ptr+=2) {
             if (ptr[0]==0) {
                 if      (ptr[1]=='\r') { if (ptr[2]==0 && ptr[3]=='\n') { ++eol_rn; } else { ++eol_r; } }
@@ -201,7 +201,7 @@ static void txtf__detectencoding(TXTFILE* txtfile) {
         }
     }
     /* detect end-of-line for UTF-16LE & UTF-16LE with BOM */
-    else if (encoding==TXTF_ENCODING_UTF16_LE || encoding==TXTF_ENCODING_UTF16_LE_BOM) {
+    else if (encoding==TEXTF_ENCODING_UTF16_LE || encoding==TEXTF_ENCODING_UTF16_LE_BOM) {
         ptr=start; for (count=(len/2)-2; count>0; --count,ptr+=2) {
             if (ptr[1]==0) {
                 if      (ptr[0]=='\r') { if (ptr[3]==0 && ptr[2]=='\n') { ++eol_rn; } else { ++eol_r; } }
@@ -209,73 +209,72 @@ static void txtf__detectencoding(TXTFILE* txtfile) {
             }
         }
     }
-
     /* store results and return */
-    isEncodingSupported = (encoding==TXTF_ENCODING_UTF8) || (encoding==TXTF_ENCODING_UTF8_BOM);
-    txtfile->encoding = encoding;
-    txtfile->eol      = txtf__selecteol(eol_r, eol_rn, eol_n, eol_nr);;
-    txtfile->nextLine = txtfissupported(txtfile) ? (char*)start : NULL;
+    isEncodingSupported = (encoding==TEXTF_ENCODING_UTF8) || (encoding==TEXTF_ENCODING_UTF8_BOM);
+    textfile->encoding = encoding;
+    textfile->eol      = textf__selecteol(eol_r, eol_rn, eol_n, eol_nr);;
+    textfile->nextLine = textfissupported(textfile) ? (char*)start : NULL;
 }
 
 
 /*=================================================================================================================*/
-#pragma mark - > TXTFILE IMPLEMENTATION
+#pragma mark - > TEXTFILE IMPLEMENTATION
 
 /**
- * Opens a file and returns a TXTFILE object that controls it
+ * Opens a file and returns a TEXTFILE object that controls it
  *
  * @param filename  The path to the file to open
  * @param mode      A null-terminated string determining the file access mode (only the "r" is supported)
- * @returns         The pointer to the TXTFILE object that controls the opened file or NULL if an error has ocurred.
+ * @returns         The pointer to the TEXTFILE object that controls the opened file or NULL if an error has ocurred.
  */
-TXTFILE* txtfopen(const char* filename, const char* mode) {
-    TXTFILE* txtfile=NULL; FILE* file;
+TEXTFILE* textfopen(const char* filename, const char* mode) {
+    TEXTFILE* textfile=NULL; FILE* file;
     assert( filename!=NULL );
     assert( mode[0]=='r' && mode[1]=='\0' );
 
     file = fopen(filename,mode);
     if (file) {
-        txtfile = malloc(sizeof(TXTFILE));
-        txtfile->file              = file;
-        txtfile->buffer            = txtfile->initialBuffer;
-        txtfile->bufferSize        = TXTFILE_INI_BUFSIZE;
-        txtfile->nextLine          = txtfile->buffer;
-        txtfile->bufferEnd         = txtfile->nextLine;
-        txtfile->expandedBuffer    = NULL;
-        txtfile->moreDataAvailable = 0;
+        textfile = malloc(sizeof(TEXTFILE));
+        textfile->file              = file;
+        textfile->buffer            = textfile->initialBuffer;
+        textfile->bufferSize        = TEXTFILE_INI_BUFSIZE;
+        textfile->nextLine          = textfile->buffer;
+        textfile->bufferEnd         = textfile->nextLine;
+        textfile->expandedBuffer    = NULL;
+        textfile->moreDataAvailable = 0;
         
         /* read first chunk of data */
-        txtf__readmoredata(txtfile);
-        txtf__detectencoding(txtfile);
+        textf__readmoredata(textfile);
+        textf__detectencoding(textfile);
     }
-    return txtfile;
+    return textfile;
 }
 
 /**
  * Read a line of text from the provided file
- * @param txtfile   The pointer to a TXTFILE object that controls the file to read the data from
+ * @param textfile  The pointer to a TEXTFILE object that controls the file to read the data from
  * @returns         A pointer to the buffer containing the read line or NULL if there isn't more lines to read
  */
-char* txtfgetline(TXTFILE* txtfile) {
+char* textfgetline(TEXTFILE* textfile) {
     char *ptr, *line;
-    assert( txtfile!=NULL && txtfile->file!=NULL );
+    assert( textfile!=NULL && textfile->file!=NULL );
     
-    if (txtfile->nextLine==NULL) { return NULL; }
+    if (textfile->nextLine==NULL) { return NULL; }
     
-    ptr = line = txtfile->nextLine;
+    ptr = line = textfile->nextLine;
     while (ptr==line) {
         /* find end-of-line */
-        while (*ptr!='\n' && *ptr!='\r' && ptr<(txtfile->bufferEnd)) { ++ptr; }
+        while (*ptr!='\n' && *ptr!='\r' && ptr<(textfile->bufferEnd)) { ++ptr; }
         /* if end-of-line is found -> mark it with a string terminator '\0' */
         if      (*ptr=='\r') { *ptr++='\0'; if (*ptr=='\n') { ++ptr; } }
         else if (*ptr=='\n') { *ptr++='\0'; if (*ptr=='\r') { ++ptr; } }
         /* end-of-line NOT found in buffer */
         /* if more data is available -> load more data into buffer and SEARCH AGAIN (ptr=line) */
         /* otherwise the end of file was reached -> mark it with a string terminator '\0'      */
-        else if (txtfile->moreDataAvailable) { ptr=line=txtf__readmoredata(txtfile);  }
-        else                                 { *ptr='\0'; ptr=NULL; /* end-of-file */ }
+        else if (textfile->moreDataAvailable) { ptr=line=textf__readmoredata(textfile); }
+        else                                  { *ptr='\0'; ptr=NULL; /* end-of-file */  }
     }
-    txtfile->nextLine = ptr;
+    textfile->nextLine = ptr;
     return line;
 }
 
@@ -287,16 +286,16 @@ char* txtfgetline(TXTFILE* txtfile) {
  *
  * @param buffer   Pointer to the buffer of chars where the string read will be stored
  * @param bufsize  Maximum number of bytes to be copied into 'buffer' (including '\0')
- * @param txtfile  Pointer to a TXTFILE object that identifies a file opened with the 'txtfopen' function
+ * @param textfile Pointer to a TEXTFILE object that identifies a file opened with the 'textfopen' function
  * @returns
  *     pointer to 'buffer' when success or NULL when no more lines can be read
  */
-char* txtfgets(char* buffer, int bufsize, TXTFILE* txtfile) {
+char* textfgets(char* buffer, int bufsize, TEXTFILE* textfile) {
     char* line; int length;
     assert( buffer!=NULL && bufsize>2 );
-    assert( txtfile!=NULL );
+    assert( textfile!=NULL );
  
-    line = txtfgetline(txtfile); if (line==NULL) { return NULL; }
+    line = textfgetline(textfile); if (line==NULL) { return NULL; }
     length=(int)strlen(line); if (length>(bufsize-2)) { length=(bufsize-2); }
     memcpy(buffer, line, length);
     buffer[length]='\n'; buffer[length+1]='\0';
@@ -304,19 +303,19 @@ char* txtfgets(char* buffer, int bufsize, TXTFILE* txtfile) {
 }
 
 /**
- * Closes the file associated with the provided TXTFILE object and releases all related resources
- * @param txtfile  Pointer to a TXTFILE object that specifies the file to close
+ * Closes the file associated with the provided TEXTFILE object and releases all related resources
+ * @param textfile Pointer to a TEXTFILE object that specifies the file to close
  * @returns        Zero (0) if the file is successfully closed
  */
-int txtfclose(TXTFILE* txtfile) {
-    if (txtfile!=NULL) {
-        free(txtfile->expandedBuffer);
-        free(txtfile);
+int textfclose(TEXTFILE* textfile) {
+    if (textfile!=NULL) {
+        free(textfile->expandedBuffer);
+        free(textfile);
     }
     return 0;
 }
 
 
-#endif /* ifdef TXTFILE_IMPLEMENTATION */
+#endif /* ifdef TEXTFILE_IMPLEMENTATION */
 
-#endif /* ifndef TXTFILE_H_INCLUDED__ */
+#endif /* ifndef TEXTFILE_H_INCLUDED */
