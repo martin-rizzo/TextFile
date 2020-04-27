@@ -24,7 +24,7 @@
 
 /* Begin PBXFileReference section */
 		5B04CC95244F57CE000291BE /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		5B04CC96244F57CE000291BE /* txtfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = txtfile.h; sourceTree = "<group>"; };
+		5B04CC96244F57CE000291BE /* textfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = textfile.h; sourceTree = "<group>"; };
 		5B04CC97244F57CE000291BE /* LICENSE.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
 		5B04CC99244F5819000291BE /* lines.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lines.c; sourceTree = "<group>"; };
 		5B04CC9A244F5819000291BE /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
@@ -54,7 +54,7 @@
 		5BE1C139244F569B00CD1BBC = {
 			isa = PBXGroup;
 			children = (
-				5BE1C144244F569B00CD1BBC /* txtfile */,
+				5BE1C144244F569B00CD1BBC /* textfile */,
 				5BE1C143244F569B00CD1BBC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -67,15 +67,15 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		5BE1C144244F569B00CD1BBC /* txtfile */ = {
+		5BE1C144244F569B00CD1BBC /* textfile */ = {
 			isa = PBXGroup;
 			children = (
 				5B04CC98244F57F5000291BE /* app */,
 				5B04CC97244F57CE000291BE /* LICENSE.md */,
 				5B04CC95244F57CE000291BE /* README.md */,
-				5B04CC96244F57CE000291BE /* txtfile.h */,
+				5B04CC96244F57CE000291BE /* textfile.h */,
 			);
-			name = txtfile;
+			name = textfile;
 			path = ..;
 			sourceTree = SOURCE_ROOT;
 		};

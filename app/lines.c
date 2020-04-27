@@ -5,7 +5,7 @@
  * @copyright  Copyright (c) 2020 Martin Rizzo.
  *             This project is released under the MIT License.
  * -------------------------------------------------------------------------
- *  LINES - example using the 'txtfile.h' library
+ *  LINES - prints lines of text; example that uses the 'textfile.h' library
  * -------------------------------------------------------------------------
  *  Copyright (c) 2020 Martin Rizzo
  *
@@ -30,9 +30,9 @@
  * -------------------------------------------------------------------------
  */
 
-/* includes the 'txtfile.h' library and its implementation */
-#define TXTFILE_IMPLEMENTATION
-#include "../txtfile.h"
+/* includes the 'textfile.h' library and its implementation */
+#define TEXTFILE_IMPLEMENTATION
+#include "../textfile.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -84,28 +84,28 @@ static void readRange(int* out_firstLine, int* out_lastLine, int argc, char *arg
 
 /**
  * Prints the type of encoding used in the provided text file
- * @param txtfile  The text file to examine (it should be already open with 'txtfopen')
+ * @param textfile  The text file to examine (it should be already open with 'textfopen')
  */
-static void printEncoding(TXTFILE* txtfile) {
+static void printEncoding(TEXTFILE* textfile) {
     const char *encoding, *eol;
     
-    assert( txtfile!=NULL );
+    assert( textfile!=NULL );
     
-    switch (txtfile->encoding) {
-        case TXTF_ENCODING_UTF8:          encoding = "UTF-8"; break;
-        case TXTF_ENCODING_UTF8_BOM:      encoding = "UTF-8 with BOM"; break;
-        case TXTF_ENCODING_UTF16_LE:      encoding = "UTF-16 LE"; break;
-        case TXTF_ENCODING_UTF16_BE:      encoding = "UTF-16 BE"; break;
-        case TXTF_ENCODING_UTF16_LE_BOM:  encoding = "UTF-16 LE with BOM"; break;
-        case TXTF_ENCODING_UTF16_BE_BOM:  encoding = "UTF-16 BE with BOM"; break;
-        case TXTF_ENCODING_BINARY:        encoding = "Binary"; break;
+    switch (textfile->encoding) {
+        case TEXTF_ENCODING_UTF8:          encoding = "UTF-8"; break;
+        case TEXTF_ENCODING_UTF8_BOM:      encoding = "UTF-8 with BOM"; break;
+        case TEXTF_ENCODING_UTF16_LE:      encoding = "UTF-16 LE"; break;
+        case TEXTF_ENCODING_UTF16_BE:      encoding = "UTF-16 BE"; break;
+        case TEXTF_ENCODING_UTF16_LE_BOM:  encoding = "UTF-16 LE with BOM"; break;
+        case TEXTF_ENCODING_UTF16_BE_BOM:  encoding = "UTF-16 BE with BOM"; break;
+        case TEXTF_ENCODING_BINARY:        encoding = "Binary"; break;
     }
-    switch (txtfile->eol) {
-        case TXTF_EOL_UNIX:        eol = "Unix"; break;
-        case TXTF_EOL_WINDOWS:     eol = "Windows"; break;
-        case TXTF_EOL_CLASSICMAC:  eol = "Classic Mac"; break;
-        case TXTF_EOL_ACORNBBC:    eol = "Acorn BBC"; break;
-        case TXTF_EOL_UNKNOWN:     eol = "-"; break;
+    switch (textfile->eol) {
+        case TEXTF_EOL_UNIX:        eol = "Unix"; break;
+        case TEXTF_EOL_WINDOWS:     eol = "Windows"; break;
+        case TEXTF_EOL_CLASSICMAC:  eol = "Classic Mac"; break;
+        case TEXTF_EOL_ACORNBBC:    eol = "Acorn BBC"; break;
+        case TEXTF_EOL_UNKNOWN:     eol = "-"; break;
     }
     printf("%s : %s\n", encoding, eol);
 }
@@ -120,18 +120,18 @@ static void printEncoding(TXTFILE* txtfile) {
  */
 static void printLinesOfText(const char* filename, int printNumbers,
                              int firstLine, int lastLine, const char* textToFind) {
-    TXTFILE* txtfile; int lineNumber; const char* line;
+    TEXTFILE* textfile; int lineNumber; const char* line;
     assert( filename!=NULL );
     
-    txtfile = txtfopen(filename, "r");
-    if (txtfile==NULL) { return; }
+    textfile = textfopen(filename, "r");
+    if (textfile==NULL) { return; }
     
     printf("%s : ",filename);
-    printEncoding(txtfile);
-    if (txtfissupported(txtfile)) {
+    printEncoding(textfile);
+    if (textfissupported(textfile)) {
         lineNumber=1; do
         {
-            line = txtfgetline(txtfile);
+            line = textfgetline(textfile);
             if ( shouldPrint(lineNumber,line,firstLine,lastLine,textToFind) ) {
                 if (printNumbers) { printf("%3d| %s\n", lineNumber, line); }
                 else              { printf("| %s\n", line);                }
@@ -143,7 +143,7 @@ static void printLinesOfText(const char* filename, int printNumbers,
     else {
         printf("  << not supported >>\n");
     }
-    txtfclose(txtfile);
+    textfclose(textfile);
 }
 
 

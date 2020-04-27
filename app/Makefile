@@ -4,7 +4,7 @@ BIN_DIR  = .
 
 TARGET_RELEASE = $(BIN_DIR)/lines
 TARGET_DEBUG   = $(BIN_DIR)/lines-debug
-HEADERS        = ../txtfile.h
+HEADERS        = ../textfile.h
 SOURCE         = lines.c
 
 ## compiler flags ##
