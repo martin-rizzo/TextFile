@@ -6,14 +6,39 @@ A portable, one-header library to read lines of text from file.
 
 Installation
 ------------
-TextFile is a single header library. Simply put the `textfile.h` header file in the include folder of your project source tree.
+TextFile is a single header library. Simply put the `'textfile.h'` header in the include folder of your project source tree.
 
-Usage
------
+Functions
+---------
+
+```C
+/* Main TextFile functions: */
+TEXTFILE*      textfopen(const char* filename, const char* mode);
+char*          textfgetline(TEXTFILE* textfile);
+int            textfclose(TEXTFILE* textfile);
+
+/* Encoding detection functions */
+int            textfissupported(TEXTFILE* textfile);
+TEXTF_ENCODING textfgetencoding(TEXTFILE* textfile);
+TEXTF_EOL      textfgeteol(TEXTFILE* textfile)
+
+/* Extra function for compatibility with already existing code */
+char*          textfgets(char* buffer, int bufsize, TEXTFILE* textfile);
+```
+
+### textfopen
+### textfgetline
+### textfclose
+
+### textfissupported
+### testfgetencoding
+### textfgeteol
+
+### textfgets
 
 
-Example
--------
+Examples
+--------
 
 ```C
 #include "textfile.h"
@@ -36,5 +61,11 @@ BOOL printLinesOfText(const char* filename) {
 
 ```
 
-....
+License
+-------
+
+Copyright (c) 2020 Martin Rizzo
+
+This project is licensed under the MIT license.  
+See the [LICENSE.md]("LICENSE.md") file for details.
 
