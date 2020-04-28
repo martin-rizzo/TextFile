@@ -11,5 +11,30 @@ TextFile is a single header library. Simply put the `textfile.h` header file in 
 Usage
 -----
 
+
+Example
+-------
+
+```C
+#include "textfile.h"
+
+Bool printLinesOfText(const char* filename) {
+	TEXTFILE* textfile;
+	const char* line; int num;
+
+	textfile = textfopen(filename, "r");
+	if (!textfile) { return FALSE; }
+
+	num = 1; do {
+    	line = textfgetline(textfile);
+    	if (line != NULL) { printf("%d: %s", num++, line); }
+	} while (line != NULL);
+	
+	textfclose(textfile);
+	return TRUE;
+}
+
+```
+
 ....
 
