@@ -18,20 +18,20 @@ Example
 ```C
 #include "textfile.h"
 
-Bool printLinesOfText(const char* filename) {
-	TEXTFILE* textfile;
-	const char* line; int num;
-
-	textfile = textfopen(filename, "r");
-	if (!textfile) { return FALSE; }
-
-	num = 1; do {
-    	line = textfgetline(textfile);
-    	if (line != NULL) { printf("%d: %s", num++, line); }
-	} while (line != NULL);
-	
-	textfclose(textfile);
-	return TRUE;
+BOOL printLinesOfText(const char* filename) {
+    TEXTFILE* textfile;
+    const char* line; int num;
+    
+    textfile = textfopen(filename, "r");
+    if (!textfile) { return FALSE; }
+    
+    num = 1; do {
+        line = textfgetline(textfile);
+        if (line != NULL) { printf("%d: %s\n", num++, line); }
+    } while (line != NULL);
+    
+    textfclose(textfile);
+    return TRUE;
 }
 
 ```
