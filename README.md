@@ -1,3 +1,6 @@
+<img alt="TextFile logo" src="develop/TextFile.png" align="right"/>
+
+
 TextFile
 ========
 
