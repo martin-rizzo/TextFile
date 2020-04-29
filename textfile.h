@@ -110,6 +110,10 @@ extern char* textfgets(char* buffer, int bufsize, TEXTFILE* textfile);
 extern int textfclose(TEXTFILE* textfile);
 
 
+/**
+ * Returns TRUE(1) if the encoding of the provided file is supported
+ * @param textfile A pointer to the TEXTFILE object that identifies a file opened with the `textfopen( )` function
+ */
 #define textfissupported(textfile) (                \
   (textfile->encoding==TEXTF_ENCODING_UTF8    ) ||  \
   (textfile->encoding==TEXTF_ENCODING_UTF8_BOM)     \
