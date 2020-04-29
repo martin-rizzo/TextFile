@@ -9,15 +9,14 @@ A portable, one-header library to read lines of text from file.
 
 Installation and usage
 ----------------------
-TextFile is a single header library. That is, you only need to copy the `'textfile.h'` header into any folder of your project's source tree. Then when you want to start using TextFile functions in your code for first time, you must include the library header but making sure to define TEXTFILE_IMPLEMENTATION macro before including it.  
-Example:
+TextFile is a single header library. That is, you only need to copy the `'textfile.h'` header into any folder of your project's source tree. Then when you want to start using TextFile functions for first time, you must include the header in your code but making sure to define TEXTFILE_IMPLEMENTATION macro just before including it:
 
 ```C
     #define TEXTFILE_IMPLEMENTATION
     #include "textfile.h"
 ```
 
-Note: If other source files in your project need to use the TextFile functions then they only must include the header as usual WITHOUT having to define the macro again.
+Later if other source files in your project need to use the TextFile functions then they only must include the header as usual WITHOUT having to define the macro again.
 
 Functions
 ---------
