@@ -19,8 +19,8 @@ Example:
 
 Note: If other source files in your project need to use the TextFile functions then they only must include the header as usual WITHOUT having to define the macro again.
 
-Functions by Category
----------------------
+Functions
+---------
 
 ```C
     /*== OPEN/READ/CLOSE FUNCTIONS =======================*/
@@ -37,9 +37,8 @@ Functions by Category
     char*          textfgets(char* buffer, int bufsize, TEXTFILE* textfile);
 ```
 
-Function Documentation
-----------------------
-
+Documentation
+-------------
 
 ### textfopen( )
 
@@ -52,8 +51,7 @@ TEXTFILE* textfopen(const char* filename, const char* mode);
   * `mode` : A null-terminated string determining the file access mode (only the "r" mode is supported).
   * Returns the pointer to a TEXTFILE object that controls the opened file or NULL if an error has ocurred
 
-
-
+--------------------------------------------------
 ### textfgetline( )
 
 Read a line of text from the provided file.
@@ -65,9 +63,8 @@ char* textfgetline(TEXTFILE* textfile);
  * `textfile` : A pointer to the TEXTFILE object that controls the file to read the data from.
  * Returns a pointer to the buffer containing the read line or `NULL` if there isn't more lines to read.
 
-
-
-### textfclose
+-----------------------------
+### textfclose( )
 
 Closes the file associated with the provided TEXTFILE object and releases all related resources.
 
@@ -78,12 +75,17 @@ int textfclose(TEXTFILE* textfile);
  * `textfile` : A pointer to the TEXTFILE object that specifies the file to close.
  * Returns zero (0) if the file is successfully closed.
 
+--------------------------------------------------
+### textfissupported( )
 
-### textfissupported
-### testfgetencoding
-### textfgeteol
+--------------------------------------------------
+### testfgetencoding( )
 
-### textfgets
+--------------------------------------------------
+### textfgeteol( )
+
+--------------------------------------------------
+### textfgets( )
 
 
 Examples
