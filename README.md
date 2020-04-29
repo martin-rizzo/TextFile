@@ -19,8 +19,8 @@ Example:
 
 Note: If other source files in your project need to use the TextFile functions then they only must include the header as usual WITHOUT having to define the macro again.
 
-Functions
----------
+Functions by Category
+---------------------
 
 ```C
     /*== OPEN/READ/CLOSE FUNCTIONS =======================*/
@@ -44,15 +44,28 @@ Function Documentation
 ```C
     TEXTFILE* textfopen(const char* filename, const char* mode);
 ```
-
 Opens the file whose path is specified in 'filename' and returns a TEXTFILE object that can be used in future read operations on this file.
 
   * `filename` : The path to the file to open
-  * `mode` : A null-terminated string determining the file access mode (only the "r" mode is supported)
+  * `mode` : A null-terminated string determining the file access mode (only the "r" mode is supported).
+  * Returns the pointer to a TEXTFILE object that controls the opened file or NULL if an error has ocurred
 
 
 ### textfgetline
+```C
+    char* textfgetline(TEXTFILE* textfile);
+```
+Read a line of text from the provided file.
+
+ * `textfile` : The pointer to a TEXTFILE object that controls the file to read the data from.
+ * Returns a pointer to the buffer containing the read line or `NULL` if there isn't more lines to read.
+
+
 ### textfclose
+```C
+    int textfclose(TEXTFILE* textfile);
+```
+
 
 ### textfissupported
 ### testfgetencoding
