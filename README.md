@@ -77,14 +77,75 @@ int textfclose(TEXTFILE* textfile);
 --------------------------------------------------
 ### textfissupported( )
 
+Verifies if the encoding of the provided file is supported by TextFile.
+
+If the encoding of the opened file isn't supported then the textfgetline function will always return NULL. At the moment only ASCII, Extended-ASCII, UTF-8 and UTF-8 with BOM are supported.
+
+```C
+int textfissupported(TEXTFILE* textfile);
+```
+
+ * `textfile` : A pointer to the TEXTFILE object that identifies the file opened with the textfopen function
+ * Returns TRUE/1 if the encoding is supported, otherwise FALSE/0
+
+
 --------------------------------------------------
 ### testfgetencoding( )
+
+Returns the detected encoding of the opened file.
+
+Although ASCII and Extended-ASCII encoding are supported, they aren't detected by TextFile (both are reported as TEXTF_UTF8). Since pure ASCII is a subset of UTF8-8, this would not cause any problem.
+
+```C
+TEXTF_ENCODING textfgetencoding(TEXTFILE* textfile);
+```
+
+ * `textfile` : A pointer to the TEXTFILE object that identifies the file opened with the textfopen function
+ * Returns the detected encoding method:
+      * `TEXTF_ENCODING_UTF8           : UTF8, ASCII, Extended-ASCII (ex:Windows-1252), ...`
+      * `TEXTF_ENCODING_UTF8_BOM       : UTF8+BOM [confirmed]                              `
+      * `TEXTF_ENCODING_UTF16_LE       : UTF16 little-endian                               `
+      * `TEXTF_ENCODING_UTF16_BE       : UTF16 big-endian                                  `
+      * `TEXTF_ENCODING_UTF16_LE_BOM   : UTF16+BOM little-endian [confirmed]               `
+      * `TEXTF_ENCODING_UTF16_BE_BOM   : UTF16+BOM big-endian [confirmed]                  `
+      * `TEXTF_ENCODING_BINARY         : invalid text file (it's likely a binary file)     `
+
+
 
 --------------------------------------------------
 ### textfgeteol( )
 
+Returns the end-of-line format of the opened file.
+
+```C
+TEXTF_EOL textfgeteol(TXTFILE* textfile);
+```
+
+ * `textfile` : A pointer to the TEXTFILE object that identifies the file opened with the textfopen function
+ * Returns the detected end-of-line format:
+      * `TEXTF_EOL_WINDOWS       : '\r\n'  =  MS Windows, DOS, CP/M, OS/2, Atari TOS, ...`
+      * `TEXTF_EOL_UNIX          : '\n'    =  Linux, macOS, BeOS, Amiga, RISC OS, ...`
+      * `TEXTF_EOL_CLASSICMAC    : '\r'    =  Classic Mac OS, C64, C128, ZX Spectrum, TRS-80, Apple II, ...`
+      * `TEXTF_EOL_ACORNBBC      : '\n\r'  =  Acorn BBC `
+      * `TEXTF_EOL_UNKNOWN`
+
+
 --------------------------------------------------
 ### textfgets( )
+
+This function is for compatibility with preexistent source code using standard file access.
+
+Reads characters from text file until (bufsize-1) characters have been read or either a newline or end-of-file is reached, whichever happens first.
+
+```C
+char* textfgets(char* buffer, int bufsize, TEXTFILE* textfile)
+```
+
+ * `buffer` : A pointer to the buffer of chars where the string read will be stored
+ * `bufsize` : The maximum number of bytes to be copied into 'buffer' (including '\0')
+ * `textfile` : A pointer to the TEXTFILE object that identifies a file opened with the 'textfopen' function
+ * Returns a pointer to 'buffer' when success or NULL when no more lines can be read
+ 
 
 
 Examples
