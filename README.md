@@ -40,31 +40,43 @@ Functions by Category
 Function Documentation
 ----------------------
 
+
 ### textfopen( )
-```C
-    TEXTFILE* textfopen(const char* filename, const char* mode);
-```
+
 Opens the file whose path is specified in 'filename' and returns a TEXTFILE object that can be used in future read operations on this file.
 
+```C
+TEXTFILE* textfopen(const char* filename, const char* mode);
+```
   * `filename` : The path to the file to open
   * `mode` : A null-terminated string determining the file access mode (only the "r" mode is supported).
   * Returns the pointer to a TEXTFILE object that controls the opened file or NULL if an error has ocurred
 
 
-### textfgetline
-```C
-    char* textfgetline(TEXTFILE* textfile);
-```
+
+### textfgetline( )
+
 Read a line of text from the provided file.
 
- * `textfile` : The pointer to a TEXTFILE object that controls the file to read the data from.
+```C
+char* textfgetline(TEXTFILE* textfile);
+```
+
+ * `textfile` : A pointer to the TEXTFILE object that controls the file to read the data from.
  * Returns a pointer to the buffer containing the read line or `NULL` if there isn't more lines to read.
 
 
+
 ### textfclose
+
+Closes the file associated with the provided TEXTFILE object and releases all related resources.
+
 ```C
-    int textfclose(TEXTFILE* textfile);
+int textfclose(TEXTFILE* textfile);
 ```
+
+ * `textfile` : A pointer to the TEXTFILE object that specifies the file to close.
+ * Returns zero (0) if the file is successfully closed.
 
 
 ### textfissupported
