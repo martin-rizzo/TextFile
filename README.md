@@ -1,5 +1,8 @@
-<img alt="TextFile logo" src="develop/TextFile.png" align="right"/>
+![license](https://img.shields.io/github/license/martin-rizzo/TextFile)
+![last commit](https://img.shields.io/github/last-commit/martin-rizzo/TextFile)
+![code size](https://img.shields.io/github/languages/code-size/martin-rizzo/TextFile)
 
+<img alt="TextFile logo" src="develop/TextFile.png" align="right"/>
 
 TextFile
 ========
