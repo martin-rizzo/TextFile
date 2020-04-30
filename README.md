@@ -101,14 +101,17 @@ TEXTF_ENCODING textfgetencoding(TEXTFILE* textfile);
 ```
 
  * `textfile` : A pointer to the TEXTFILE object that identifies the file opened with the textfopen function
- * Returns the detected encoding method:
-      * `TEXTF_ENCODING_UTF8           : UTF8, ASCII, Extended-ASCII (ex:Windows-1252), ...`
-      * `TEXTF_ENCODING_UTF8_BOM       : UTF8+BOM [confirmed]                              `
-      * `TEXTF_ENCODING_UTF16_LE       : UTF16 little-endian                               `
-      * `TEXTF_ENCODING_UTF16_BE       : UTF16 big-endian                                  `
-      * `TEXTF_ENCODING_UTF16_LE_BOM   : UTF16+BOM little-endian [confirmed]               `
-      * `TEXTF_ENCODING_UTF16_BE_BOM   : UTF16+BOM big-endian [confirmed]                  `
-      * `TEXTF_ENCODING_BINARY         : invalid text file (it's likely a binary file)     `
+ * Returns one of the following encoding methods:
+
+|  encoding method              |                   description                                    |
+|-------------------------------|------------------------------------------------------------------|
+| `TEXTF_ENCODING_UTF8`         | UTF-8, ASCII, Extended-ASCII (ex:Windows-1252), ...              |
+| `TEXTF_ENCODING_UTF8_BOM`     | UTF-8 with BOM [confirmed]                                       |
+| `TEXTF_ENCODING_UTF16_LE`     | UTF-16 little-endian [guessed]                                   |
+| `TEXTF_ENCODING_UTF16_BE`     | UTF-16 big-endian [guessed]                                      |
+| `TEXTF_ENCODING_UTF16_LE_BOM` | UTF-16 with BOM, little-endian [confirmed]                       |
+| `TEXTF_ENCODING_UTF16_BE_BOM` | UTF-16 with BOM, big-endian [confirmed]                          |
+| `TEXTF_ENCODING_BINARY `      | invalid or unsupported text encoding (it's likely a binary file) |
 
 
 
@@ -122,12 +125,15 @@ TEXTF_EOL textfgeteol(TXTFILE* textfile);
 ```
 
  * `textfile` : A pointer to the TEXTFILE object that identifies the file opened with the textfopen function
- * Returns the detected end-of-line format:
-      * `TEXTF_EOL_WINDOWS       : '\r\n'  =  MS Windows, DOS, CP/M, OS/2, Atari TOS, ...`
-      * `TEXTF_EOL_UNIX          : '\n'    =  Linux, macOS, BeOS, Amiga, RISC OS, ...`
-      * `TEXTF_EOL_CLASSICMAC    : '\r'    =  Classic Mac OS, C64, C128, ZX Spectrum, TRS-80, Apple II, ...`
-      * `TEXTF_EOL_ACORNBBC      : '\n\r'  =  Acorn BBC `
-      * `TEXTF_EOL_UNKNOWN`
+ * Returns one of the following end-of-line formats:
+
+|  end-of-line format    |                   description                              |
+|------------------------|------------------------------------------------------------|
+| `TEXTF_EOL_WINDOWS`    | `\r\n` : MS Windows, DOS, CP/M, OS/2, Atari TOS, ...       |
+| `TEXTF_EOL_UNIX`       | `\n`   : Linux, macOS, BeOS, Amiga, RISC OS, ...           |
+| `TEXTF_EOL_CLASSICMAC` | `\r`   :  Classic Mac OS, C64, ZX Spectrum, Apple II, ...  |
+| `TEXTF_EOL_ACORNBBC`   | `\n\r` : Acorn BBC                                         |
+| `TEXTF_EOL_UNKNOWN`    |  The file is too small or it has an unsupported encoding   |
 
 
 --------------------------------------------------
