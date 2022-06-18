@@ -1,14 +1,21 @@
-![license](https://img.shields.io/github/license/martin-rizzo/TextFile)
-![last commit](https://img.shields.io/github/last-commit/martin-rizzo/TextFile)
-![code size](https://img.shields.io/github/languages/code-size/martin-rizzo/TextFile)
-
-<img alt="TextFile logo" src="develop/TextFile.png" align="right"/>
+<div align="center">
 
 TextFile
 ========
+A portable, header only C library to easily read lines of text from files encoded in any format.
 
-A portable, one-header library to read lines of text from file.
+[![Platform](https://img.shields.io/badge/platform-any-33F)]
+(https://en.wikipedia.org/wiki/Cross-platform_software)
+[![Language](https://img.shields.io/badge/language-C-22E)]
+(https://en.wikipedia.org/wiki/C_(programming_language))
+[![License](https://img.shields.io/github/license/martin-rizzo/TextFile?color=11D)]
+(LICENSE.md)
+[![Last Commit](https://img.shields.io/github/last-commit/martin-rizzo/TextFile)]
+(https://github.com/martin-rizzo/TextFile/commits/master)
 
+</div>
+
+**TextFile** has an interface similar to fopen/fgets but transparently converts each line of text to UTF-8 from whatever the encoding of the source file is. The different end-of-line formats (win, mac, linux) are also transparently processed without any user intervention.
 
 Installation and usage
 ----------------------
