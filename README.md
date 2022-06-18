@@ -4,14 +4,10 @@ TextFile
 ========
 A portable, header only C library to easily read lines of text from files encoded in any format.
 
-[![Platform](https://img.shields.io/badge/platform-any-33F)]
-(https://en.wikipedia.org/wiki/Cross-platform_software)
-[![Language](https://img.shields.io/badge/language-C-22E)]
-(https://en.wikipedia.org/wiki/C_(programming_language))
-[![License](https://img.shields.io/github/license/martin-rizzo/TextFile?color=11D)]
-(LICENSE.md)
-[![Last Commit](https://img.shields.io/github/last-commit/martin-rizzo/TextFile)]
-(https://github.com/martin-rizzo/TextFile/commits/master)
+[![Platform](https://img.shields.io/badge/platform-any-33F)](https://en.wikipedia.org/wiki/Cross-platform_software)
+[![Language](https://img.shields.io/badge/language-C-22E)](https://en.wikipedia.org/wiki/C_(programming_language))
+[![License](https://img.shields.io/github/license/martin-rizzo/TextFile?color=11D)](LICENSE.md)
+[![Last Commit](https://img.shields.io/github/last-commit/martin-rizzo/TextFile)](https://github.com/martin-rizzo/TextFile/commits/master)
 
 </div>
 
